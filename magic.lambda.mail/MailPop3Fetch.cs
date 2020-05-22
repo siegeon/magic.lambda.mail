@@ -16,8 +16,8 @@ namespace magic.lambda.mime
     /// <summary>
     /// Fetches all new messages from the specified POP3 account.
     /// </summary>
-    [Slot(Name = "wait.pop.fetch")]
-    public class Pop3Fetch : ISlotAsync
+    [Slot(Name = "wait.mail.pop3.fetch")]
+    public class MailPop3Fetch : ISlotAsync
     {
         /// <summary>
         /// Implementation of your slot.
