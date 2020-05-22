@@ -11,6 +11,7 @@ using MailKit.Net.Pop3;
 using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
+using magic.lambda.mime.helpers;
 
 namespace magic.lambda.mime
 {
@@ -34,25 +35,10 @@ namespace magic.lambda.mime
         /// <param name="input">Arguments to your slot.</param>
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
-            // Retrieving connection arguments.
-            var server = input.Children.SingleOrDefault(x => x.Name == "server")?.GetEx<string>() ??
-                _configuration["magic:pop3:server"] ??
-                throw new ArgumentNullException("No [server] provided to [wait.mail.pop3.fetch]");
+            // Retrieving server connection settings.
+            var settings = new ConnectionSettings(_configuration, input, "pop3");
 
-            var port = input.Children.SingleOrDefault(x => x.Name == "port")?.GetEx<int>() ??
-                (_configuration["magic:pop3:port"] != null ? new int?(int.Parse(_configuration["magic:pop3:port"])) : null) ??
-                throw new ArgumentNullException("No [port] provided to [wait.mail.pop3.fetch]");
-
-            var ssl = input.Children.SingleOrDefault(x => x.Name == "secure")?.GetEx<bool>() ??
-                (_configuration["magic:pop3:secure"] != null ? new bool?(bool.Parse(_configuration["magic:pop3:secure"])) : null) ??
-                false;
-
-            var username = input.Children.SingleOrDefault(x => x.Name == "username")?.GetEx<string>() ??
-                _configuration["magic:pop3:username"];
-
-            var password = input.Children.SingleOrDefault(x => x.Name == "password")?.GetEx<string>() ??
-                _configuration["magic:pop3:password"];
-
+            // Maximum number of emails to fetch.
             var max = input.Children.SingleOrDefault(x => x.Name == "max")?.GetEx<int>() ?? 50;
 
             // Retrieving lambda callback for what to do for each message.
@@ -63,9 +49,9 @@ namespace magic.lambda.mime
             using (var client = new Pop3Client())
             {
                 // Connecting and authenticating (unless username is null)
-                await client.ConnectAsync(server, port, ssl);
-                if (username != null)
-                    await client.AuthenticateAsync(username, password);
+                await client.ConnectAsync(settings.Server, settings.Port, settings.Secure);
+                if (settings.Username != null)
+                    await client.AuthenticateAsync(settings.Username, settings.Password);
 
                 // Retrieving [max] number of emails.
                 for (var idx = 0; idx < client.Count && (max == -1 || client.Count < max); idx++)

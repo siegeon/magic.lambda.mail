@@ -12,6 +12,7 @@ using MailKit.Net.Smtp;
 using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
+using magic.lambda.mime.helpers;
 
 namespace magic.lambda.mime
 {
@@ -35,24 +36,8 @@ namespace magic.lambda.mime
         /// <param name="input">Arguments to your slot.</param>
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
-            // Retrieving connection arguments.
-            var server = input.Children.SingleOrDefault(x => x.Name == "server")?.GetEx<string>() ??
-                _configuration["magic:smtp:server"] ??
-                throw new ArgumentNullException("No [server] provided to [wait.mail.smtp.send]");
-
-            var port = input.Children.SingleOrDefault(x => x.Name == "port")?.GetEx<int>() ??
-                (_configuration["magic:smtp:port"] != null ? new int?(int.Parse(_configuration["magic:smtp:port"])) : null) ??
-                throw new ArgumentNullException("No [port] provided to [wait.mail.smtp.send]");
-
-            var ssl = input.Children.SingleOrDefault(x => x.Name == "secure")?.GetEx<bool>() ??
-                (_configuration["magic:smtp:secure"] != null ? new bool?(bool.Parse(_configuration["magic:smtp:secure"])) : null) ??
-                false;
-
-            var username = input.Children.SingleOrDefault(x => x.Name == "username")?.GetEx<string>() ??
-                _configuration["magic:smtp:username"];
-
-            var password = input.Children.SingleOrDefault(x => x.Name == "password")?.GetEx<string>() ??
-                _configuration["magic:smtp:password"];
+            // Retrieving server connection settings.
+            var settings = new ConnectionSettings(_configuration, input, "smtp");
 
             // Retrieving message we should actually send.
             var messageNode = input.Children.FirstOrDefault(x => x.Name == "entity") ??
@@ -63,27 +48,29 @@ namespace magic.lambda.mime
             signaler.Signal(".mime.create", messageNode);
             message.Body = messageNode.Value as MimeEntity;
 
-            // Decorating MimeMessage with subject, from, to, etc.
+            // Decorating MimeMessage with subject.
             var subject = input.Children.FirstOrDefault(x => x.Name == "subject")?.GetEx<string>();
             message.Subject = subject;
 
+            // Decorating MimeMessage with from/sender.
             var from = input.Children.FirstOrDefault(x => x.Name == "from")?.GetEx<string>() ??
                 throw new ArgumentNullException("No [from] sender given in your email");
             var fromName = input.Children.FirstOrDefault(x => x.Name == "from-name")?.GetEx<string>();
             message.From.Add(new MailboxAddress(fromName, from));
 
+            // Decorating MimeMessage with to.
             var to = input.Children.FirstOrDefault(x => x.Name == "to")?.GetEx<string>() ??
                 throw new ArgumentNullException("No [to] recipient given in your email");
             var toName = input.Children.FirstOrDefault(x => x.Name == "to-name")?.GetEx<string>();
             message.To.Add(new MailboxAddress(fromName, from));
 
-            // Creating client, and sending [message].
+            // Creating client, and sending message.
             using (var client = new SmtpClient())
             {
                 // Connecting and authenticating (unless username is null)
-                await client.ConnectAsync(server, port, ssl);
-                if (username != null)
-                    await client.AuthenticateAsync(username, password);
+                await client.ConnectAsync(settings.Server, settings.Port, settings.Secure);
+                if (settings.Username != null)
+                    await client.AuthenticateAsync(settings.Username, settings.Password);
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
             }
