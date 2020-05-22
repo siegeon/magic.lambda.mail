@@ -31,6 +31,7 @@ namespace magic.lambda.mime
                 throw new ArgumentNullException("No [server] provided to [pop.fetch]");
             var port = input.Children.SingleOrDefault(x => x.Name == "port")?.GetEx<int>() ??
                 throw new ArgumentNullException("No [port] provided to [pop.fetch]");
+            var max = input.Children.SingleOrDefault(x => x.Name == "max")?.GetEx<int>() ?? 50;
             var ssl = input.Children.SingleOrDefault(x => x.Name == "secure")?.GetEx<bool>() ?? false;
             var username = input.Children.SingleOrDefault(x => x.Name == "username")?.GetEx<string>();
             var password = input.Children.SingleOrDefault(x => x.Name == "password")?.GetEx<string>();
@@ -42,10 +43,13 @@ namespace magic.lambda.mime
             // Creating client, and fetching all new messages, invoking [.lambda] for each message fetched.
             using (var client = new Pop3Client())
             {
+                // Connecting and authenticating (unless username is null)
                 await client.ConnectAsync(server, port, ssl);
                 if (username != null)
                     await client.AuthenticateAsync(username, password);
-                for (var idx = 0; idx < client.Count; idx++)
+
+                // Retrieving [max] number of emails.
+                for (var idx = 0; idx < client.Count && (max == -1 || client.Count < max); idx++)
                 {
                     // Getting message, and parsing to lambda
                     var message = await client.GetMessageAsync(idx);
