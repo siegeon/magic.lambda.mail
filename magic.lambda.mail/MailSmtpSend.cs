@@ -6,6 +6,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using MimeKit;
 using MailKit.Net.Smtp;
 using magic.node;
@@ -20,6 +21,13 @@ namespace magic.lambda.mime
     [Slot(Name = "wait.mail.smtp.send")]
     public class MailSmtpSend : ISlotAsync
     {
+        readonly IConfiguration _configuration;
+
+        public MailSmtpSend(IConfiguration configuration)
+        {
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        }
+
         /// <summary>
         /// Implementation of your slot.
         /// </summary>
@@ -29,12 +37,22 @@ namespace magic.lambda.mime
         {
             // Retrieving connection arguments.
             var server = input.Children.SingleOrDefault(x => x.Name == "server")?.GetEx<string>() ??
+                _configuration["magic:smtp:server"] ??
                 throw new ArgumentNullException("No [server] provided to [wait.mail.smtp.send]");
+
             var port = input.Children.SingleOrDefault(x => x.Name == "port")?.GetEx<int>() ??
+                (_configuration["magic:smtp:port"] != null ? new int?(int.Parse(_configuration["magic:smtp:port"])) : null) ??
                 throw new ArgumentNullException("No [port] provided to [wait.mail.smtp.send]");
-            var ssl = input.Children.SingleOrDefault(x => x.Name == "secure")?.GetEx<bool>() ?? false;
-            var username = input.Children.SingleOrDefault(x => x.Name == "username")?.GetEx<string>();
-            var password = input.Children.SingleOrDefault(x => x.Name == "password")?.GetEx<string>();
+
+            var ssl = input.Children.SingleOrDefault(x => x.Name == "secure")?.GetEx<bool>() ??
+                (_configuration["magic:smtp:secure"] != null ? new bool?(bool.Parse(_configuration["magic:smtp:secure"])) : null) ??
+                false;
+
+            var username = input.Children.SingleOrDefault(x => x.Name == "username")?.GetEx<string>() ??
+                _configuration["magic:smtp:username"];
+
+            var password = input.Children.SingleOrDefault(x => x.Name == "password")?.GetEx<string>() ??
+                _configuration["magic:smtp:password"];
 
             // Retrieving message we should actually send.
             var messageNode = input.Children.FirstOrDefault(x => x.Name == "entity") ??
