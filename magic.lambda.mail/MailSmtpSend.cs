@@ -49,11 +49,13 @@ namespace magic.lambda.mime
             var subject = input.Children.FirstOrDefault(x => x.Name == "subject")?.GetEx<string>();
             message.Subject = subject;
 
-            var from = input.Children.FirstOrDefault(x => x.Name == "from")?.GetEx<string>();
+            var from = input.Children.FirstOrDefault(x => x.Name == "from")?.GetEx<string>() ??
+                throw new ArgumentNullException("No [from] sender given in your email");
             var fromName = input.Children.FirstOrDefault(x => x.Name == "from-name")?.GetEx<string>();
             message.From.Add(new MailboxAddress(fromName, from));
 
-            var to = input.Children.FirstOrDefault(x => x.Name == "to")?.GetEx<string>();
+            var to = input.Children.FirstOrDefault(x => x.Name == "to")?.GetEx<string>() ??
+                throw new ArgumentNullException("No [to] recipient given in your email");
             var toName = input.Children.FirstOrDefault(x => x.Name == "to-name")?.GetEx<string>();
             message.To.Add(new MailboxAddress(fromName, from));
 
