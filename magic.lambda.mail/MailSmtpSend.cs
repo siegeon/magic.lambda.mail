@@ -119,8 +119,8 @@ namespace magic.lambda.mail
                     message.Subject = subject;
 
                     // Decorating MimeMessage with from, to, cc, and bcc.
-                    message.From.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "from")));
-                    message.To.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "to")));
+                    message.From.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "from"), true));
+                    message.To.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "to"), true));
                     message.Cc.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "cc")));
                     message.Bcc.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "bcc")));
 
@@ -141,8 +141,10 @@ namespace magic.lambda.mail
          * Returns a bunch of email addresses by iterating the children of the specified node,
          * and transforming each into a valid MailboxAddress.
          */
-        IEnumerable<MailboxAddress> GetAddresses(Node iterator)
+        IEnumerable<MailboxAddress> GetAddresses(Node iterator, bool throwOnEmpty = false)
         {
+            if (throwOnEmpty && (iterator == null || !iterator.Children.Any()))
+                throw new ArgumentNullException("Missing mandatory address field");
             if (iterator == null)
                 yield break;
             foreach (var idx in iterator.Children)
