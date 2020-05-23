@@ -127,8 +127,8 @@ namespace magic.lambda.mail
             message.Subject = subject;
 
             // Decorating MimeMessage with from, to, cc, and bcc.
-            message.From.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "from"), true));
             message.To.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "to"), true));
+            message.From.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "from"), true, "magic:smtp:"));
             message.Cc.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "cc")));
             message.Bcc.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "bcc")));
             return message;
@@ -138,10 +138,25 @@ namespace magic.lambda.mail
          * Returns a bunch of email addresses by iterating the children of the specified node,
          * and transforming each into a valid MailboxAddress.
          */
-        IEnumerable<MailboxAddress> GetAddresses(Node iterator, bool throwOnEmpty = false)
+        IEnumerable<MailboxAddress> GetAddresses(
+            Node iterator,
+            bool throwOnEmpty = false,
+            string configPrefix = null)
         {
             if (throwOnEmpty && (iterator == null || !iterator.Children.Any()))
+            {
+                if (!string.IsNullOrEmpty(configPrefix))
+                {
+                    var fromName = _configuration[configPrefix + "from:name"];
+                    var fromAddress = _configuration[configPrefix + "from:address"];
+                    if (!string.IsNullOrEmpty(fromName) && !string.IsNullOrEmpty(fromAddress))
+                    {
+                        yield return new MailboxAddress(fromName, fromAddress);
+                        yield break;
+                    }
+                }
                 throw new ArgumentNullException("Missing mandatory address field");
+            }
             if (iterator == null)
                 yield break;
             foreach (var idx in iterator.Children)

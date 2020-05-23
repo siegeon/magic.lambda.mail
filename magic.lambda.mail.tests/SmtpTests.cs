@@ -190,6 +190,44 @@ wait.mail.smtp.send
         }
 
         [Fact]
+        public async Task SendConfigFromAsync()
+        {
+            var authenticateInvoked = false;
+            var connectInvoked = false;
+            var sendInvoked = false;
+            var lambda = await Common.EvaluateAsync(@"
+wait.mail.smtp.send
+   message
+      to
+         John Doe:john@doe.com
+      subject:Subject line
+      entity:text/plain
+         content:Body content",
+                (msg) =>
+                {
+                    Assert.Equal("Foo Bar", (msg.From.First() as MailboxAddress).Name);
+                    Assert.Equal("foo@bar.com", (msg.From.First() as MailboxAddress).Address);
+                    sendInvoked = true;
+                },
+                (host, port, useSsl) =>
+                {
+                    Assert.Equal("foo2.com", host);
+                    Assert.Equal(321, port);
+                    Assert.False(useSsl);
+                    connectInvoked = true;
+                },
+                (username, password) =>
+                {
+                    Assert.Equal("xxx2", username);
+                    Assert.Equal("yyy2", password);
+                    authenticateInvoked = true;
+                });
+            Assert.True(authenticateInvoked);
+            Assert.True(connectInvoked);
+            Assert.True(sendInvoked);
+        }
+
+        [Fact]
         public void Send_01()
         {
             var sendInvoked = false;
@@ -323,25 +361,6 @@ wait.mail.smtp.send
 wait.mail.smtp.send
    message
       from
-         Jane Doe:jane@doe.com
-      subject:Subject line
-      entity:text/plain
-         content:Body content",
-                    (msg) => { },
-                    null,
-                    null);
-            });
-        }
-
-        [Fact]
-        public async Task SendAsync_03_Throws()
-        {
-            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
-            {
-                await Common.EvaluateAsync(@"
-wait.mail.smtp.send
-   message
-      to
          Jane Doe:jane@doe.com
       subject:Subject line
       entity:text/plain

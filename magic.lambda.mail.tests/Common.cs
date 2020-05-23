@@ -136,6 +136,8 @@ namespace magic.lambda.mail.tests
             mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:smtp:secure")]).Returns("false");
             mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:smtp:username")]).Returns("xxx2");
             mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:smtp:password")]).Returns("yyy2");
+            mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:smtp:from:name")]).Returns("Foo Bar");
+            mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:smtp:from:address")]).Returns("foo@bar.com");
             services.AddTransient((svc) => mockConfiguration.Object);
 
             var types = new SignalsProvider(InstantiateAllTypes<ISlot>(services));
