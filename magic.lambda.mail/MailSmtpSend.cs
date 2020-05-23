@@ -87,6 +87,10 @@ namespace magic.lambda.mime
 
         #region [ -- Private helpers -- ]
 
+        /*
+         * Returns a bunch of email addresses by iterating the children of the specified node,
+         * and transforming each into a valid MailboxAddress.
+         */
         IEnumerable<MailboxAddress> GetAddresses(Node iterator)
         {
             if (iterator == null)
