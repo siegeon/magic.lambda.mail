@@ -13,6 +13,7 @@ using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
 using magic.lambda.mime.helpers;
+using System.Collections.Generic;
 
 namespace magic.lambda.mime
 {
@@ -37,43 +38,65 @@ namespace magic.lambda.mime
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
             // Retrieving server connection settings.
-            var settings = new ConnectionSettings(_configuration, input, "smtp");
+            var settings = new ConnectionSettings(
+                _configuration,
+                input.Children.FirstOrDefault(x => x.Name == "server"),
+                "smtp");
 
-            // Retrieving message we should actually send.
-            var messageNode = input.Children.FirstOrDefault(x => x.Name == "message") ??
-                throw new ArgumentNullException("No [message] provided to [wait.mail.smtp.send]");
-
-            // Creating MimeMessage.
-            var message = new MimeMessage();
-            signaler.Signal(".mime.create", messageNode);
-            message.Body = messageNode.Value as MimeEntity;
-
-            // Decorating MimeMessage with subject.
-            var subject = input.Children.FirstOrDefault(x => x.Name == "subject")?.GetEx<string>();
-            message.Subject = subject;
-
-            // Decorating MimeMessage with from/sender.
-            var from = input.Children.FirstOrDefault(x => x.Name == "from")?.GetEx<string>() ??
-                throw new ArgumentNullException("No [from] sender given in your email");
-            var fromName = input.Children.FirstOrDefault(x => x.Name == "from-name")?.GetEx<string>();
-            message.From.Add(new MailboxAddress(fromName, from));
-
-            // Decorating MimeMessage with to.
-            var to = input.Children.FirstOrDefault(x => x.Name == "to")?.GetEx<string>() ??
-                throw new ArgumentNullException("No [to] recipient given in your email");
-            var toName = input.Children.FirstOrDefault(x => x.Name == "to-name")?.GetEx<string>();
-            message.To.Add(new MailboxAddress(toName, to));
-
-            // Creating client, and sending message.
+            // Creating SMTP client.
             using (var client = new SmtpClient())
             {
-                // Connecting and authenticating (unless username is null)
+                // Connecting and authenticating (unless username is null).
                 await client.ConnectAsync(settings.Server, settings.Port, settings.Secure);
-                if (settings.Username != null)
-                    await client.AuthenticateAsync(settings.Username, settings.Password);
-                await client.SendAsync(message);
-                await client.DisconnectAsync(true);
+                try
+                {
+                    // Checking if we're supposed to authenticate
+                    if (settings.Username != null || settings.Password != null)
+                        await client.AuthenticateAsync(settings.Username, settings.Password);
+
+                    // Iterating through each message and sending.
+                    foreach (var idxMsgNode in input.Children.Where(x => x.Name == "message"))
+                    {
+                        // Creating MimeMessage.
+                        var message = new MimeMessage();
+                        var clone = idxMsgNode.Clone();
+                        signaler.Signal(".mime.create", clone);
+                        message.Body = clone.Value as MimeEntity;
+
+                        // Decorating MimeMessage with subject.
+                        var subject = idxMsgNode.Children.FirstOrDefault(x => x.Name == "subject")?.GetEx<string>();
+                        message.Subject = subject;
+
+                        // Decorating MimeMessage with from, to, cc, and bcc.
+                        message.From.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "from")));
+                        message.To.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "to")));
+                        message.Cc.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "cc")));
+                        message.Bcc.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "bcc")));
+
+                        // Sending message over existing SMTP connection.
+                        await client.SendAsync(message);
+                    }
+                }
+                finally
+                {
+                    // Disconnecting and sending QUIT signal to SMTP server.
+                    await client.DisconnectAsync(true);
+                }
             }
         }
+
+        #region [ -- Private helpers -- ]
+
+        IEnumerable<MailboxAddress> GetAddresses(Node iterator)
+        {
+            if (iterator == null)
+                yield break;
+            foreach (var idx in iterator.Children)
+            {
+                yield return new MailboxAddress(idx.Name, idx.GetEx<string>());
+            }
+        }
+
+        #endregion
     }
 }

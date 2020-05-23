@@ -20,22 +20,22 @@ namespace magic.lambda.mime.helpers
         public ConnectionSettings(IConfiguration configuration, Node input, string serverType)
         {
             // Retrieving connection arguments.
-            Server = input.Children.SingleOrDefault(x => x.Name == "server")?.GetEx<string>() ??
-                configuration[$"magic:{serverType}:server"] ??
-                throw new ArgumentNullException("No [server] provided");
+            Server = input?.Children.SingleOrDefault(x => x.Name == "host")?.GetEx<string>() ??
+                configuration[$"magic:{serverType}:host"] ??
+                throw new ArgumentNullException("No [host] provided");
 
-            Port = input.Children.SingleOrDefault(x => x.Name == "port")?.GetEx<int>() ??
+            Port = input?.Children.SingleOrDefault(x => x.Name == "port")?.GetEx<int>() ??
                 (configuration[$"magic:{serverType}:port"] != null ? new int?(int.Parse(configuration[$"magic:{serverType}:port"])) : null) ??
                 throw new ArgumentNullException("No [port] provided to [wait.mail.pop3.fetch]");
 
-            Secure = input.Children.SingleOrDefault(x => x.Name == "secure")?.GetEx<bool>() ??
+            Secure = input?.Children.SingleOrDefault(x => x.Name == "secure")?.GetEx<bool>() ??
                 (configuration[$"magic:{serverType}:secure"] != null ? new bool?(bool.Parse(configuration[$"magic:{serverType}:secure"])) : null) ??
                 false;
 
-            Username = input.Children.SingleOrDefault(x => x.Name == "username")?.GetEx<string>() ??
+            Username = input?.Children.SingleOrDefault(x => x.Name == "username")?.GetEx<string>() ??
                 configuration[$"magic:{serverType}:username"];
 
-            Password = input.Children.SingleOrDefault(x => x.Name == "password")?.GetEx<string>() ??
+            Password = input?.Children.SingleOrDefault(x => x.Name == "password")?.GetEx<string>() ??
                 configuration[$"magic:{serverType}:password"];
         }
 
