@@ -58,20 +58,7 @@ namespace magic.lambda.mail
                 foreach (var idxMsgNode in input.Children.Where(x => x.Name == "message"))
                 {
                     // Creating MimeMessage.
-                    var message = new MimeMessage();
-                    var clone = idxMsgNode.Clone();
-                    signaler.Signal(".mime.create", clone);
-                    message.Body = clone.Value as MimeEntity;
-
-                    // Decorating MimeMessage with subject.
-                    var subject = idxMsgNode.Children.FirstOrDefault(x => x.Name == "subject")?.GetEx<string>();
-                    message.Subject = subject;
-
-                    // Decorating MimeMessage with from, to, cc, and bcc.
-                    message.From.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "from")));
-                    message.To.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "to")));
-                    message.Cc.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "cc")));
-                    message.Bcc.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "bcc")));
+                    var message = CreateMessage(signaler, idxMsgNode);
 
                     // Sending message over existing SMTP connection.
                     _client.Send(message);
@@ -109,20 +96,7 @@ namespace magic.lambda.mail
                 foreach (var idxMsgNode in input.Children.Where(x => x.Name == "message"))
                 {
                     // Creating MimeMessage.
-                    var message = new MimeMessage();
-                    var clone = idxMsgNode.Clone();
-                    signaler.Signal(".mime.create", clone);
-                    message.Body = clone.Value as MimeEntity;
-
-                    // Decorating MimeMessage with subject.
-                    var subject = idxMsgNode.Children.FirstOrDefault(x => x.Name == "subject")?.GetEx<string>();
-                    message.Subject = subject;
-
-                    // Decorating MimeMessage with from, to, cc, and bcc.
-                    message.From.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "from"), true));
-                    message.To.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "to"), true));
-                    message.Cc.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "cc")));
-                    message.Bcc.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "bcc")));
+                    var message = CreateMessage(signaler, idxMsgNode);
 
                     // Sending message over existing SMTP connection.
                     await _client.SendAsync(message);
@@ -136,6 +110,29 @@ namespace magic.lambda.mail
         }
 
         #region [ -- Private helpers -- ]
+
+        /*
+         * Creates a MimeMessage according to given node, and returns to caller.
+         */
+        MimeMessage CreateMessage(ISignaler signaler, Node node)
+        {
+            var message = new MimeMessage();
+            var clone = node.Clone();
+            signaler.Signal(".mime.create", clone);
+            message.Body = clone.Value as MimeEntity ??
+                throw new ArgumentException("Invalid [message] supplied");
+
+            // Decorating MimeMessage with subject.
+            var subject = node.Children.FirstOrDefault(x => x.Name == "subject")?.GetEx<string>();
+            message.Subject = subject;
+
+            // Decorating MimeMessage with from, to, cc, and bcc.
+            message.From.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "from"), true));
+            message.To.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "to"), true));
+            message.Cc.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "cc")));
+            message.Bcc.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "bcc")));
+            return message;
+        }
 
         /*
          * Returns a bunch of email addresses by iterating the children of the specified node,

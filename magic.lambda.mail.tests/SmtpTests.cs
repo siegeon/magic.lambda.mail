@@ -11,7 +11,7 @@ using MimeKit;
 
 namespace magic.lambda.mail.tests
 {
-    public class MailTests
+    public class SmtpTests
     {
         [Fact]
         public async Task ConnectTestExplicitServerAsync()
@@ -187,6 +187,45 @@ wait.mail.smtp.send
                 });
             Assert.True(authenticateInvoked);
             Assert.True(connectInvoked);
+        }
+
+        [Fact]
+        public void Send_01()
+        {
+            var sendInvoked = false;
+            var lambda = Common.Evaluate(@"
+mail.smtp.send
+   message
+      to
+         John Doe:john@doe.com
+      from
+         Jane Doe:jane@doe.com
+      subject:Subject line
+      entity:text/plain
+         content:Body content",
+                (msg) =>
+                {
+                    Assert.NotNull(msg);
+                    Assert.NotEqual(typeof(Multipart), msg.Body.GetType());
+                    Assert.Equal("text", msg.Body.ContentType.MediaType);
+                    Assert.Equal("plain", msg.Body.ContentType.MediaSubtype);
+                    Assert.Equal("Subject line", msg.Subject);
+                    Assert.Single(msg.To);
+                    Assert.Equal("John Doe", msg.To.First().Name);
+                    Assert.Equal("john@doe.com", (msg.To.First() as MailboxAddress).Address);
+                    Assert.Single(msg.From);
+                    Assert.Equal("Jane Doe", msg.From.First().Name);
+                    Assert.Equal("jane@doe.com", (msg.From.First() as MailboxAddress).Address);
+                    Assert.Empty(msg.Cc);
+                    Assert.Empty(msg.Bcc);
+                    Assert.Equal(@"Content-Type: text/plain
+
+Body content", msg.Body.ToString());
+                    sendInvoked = true;
+                },
+                null,
+                null);
+            Assert.True(sendInvoked);
         }
 
         [Fact]
