@@ -6,16 +6,16 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
-using MailKit.Net.Smtp;
 using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
-using magic.lambda.mime.helpers;
-using System.Collections.Generic;
+using magic.lambda.mail.helpers;
+using contracts = magic.lambda.mime.contracts;
 
-namespace magic.lambda.mime
+namespace magic.lambda.mail
 {
     /// <summary>
     /// Sends email messages through an SMTP server.
@@ -24,10 +24,12 @@ namespace magic.lambda.mime
     public class MailSmtpSend : ISlotAsync
     {
         readonly IConfiguration _configuration;
+        readonly contracts.ISmtpClient _client;
 
-        public MailSmtpSend(IConfiguration configuration)
+        public MailSmtpSend(IConfiguration configuration, contracts.ISmtpClient client)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
         /// <summary>
@@ -43,45 +45,41 @@ namespace magic.lambda.mime
                 input.Children.FirstOrDefault(x => x.Name == "server"),
                 "smtp");
 
-            // Creating SMTP client.
-            using (var client = new SmtpClient())
+            // Connecting and authenticating (unless username is null).
+            await _client.ConnectAsync(settings.Server, settings.Port, settings.Secure);
+            try
             {
-                // Connecting and authenticating (unless username is null).
-                await client.ConnectAsync(settings.Server, settings.Port, settings.Secure);
-                try
+                // Checking if we're supposed to authenticate
+                if (settings.Username != null || settings.Password != null)
+                    await _client.AuthenticateAsync(settings.Username, settings.Password);
+
+                // Iterating through each message and sending.
+                foreach (var idxMsgNode in input.Children.Where(x => x.Name == "message"))
                 {
-                    // Checking if we're supposed to authenticate
-                    if (settings.Username != null || settings.Password != null)
-                        await client.AuthenticateAsync(settings.Username, settings.Password);
+                    // Creating MimeMessage.
+                    var message = new MimeMessage();
+                    var clone = idxMsgNode.Clone();
+                    signaler.Signal(".mime.create", clone);
+                    message.Body = clone.Value as MimeEntity;
 
-                    // Iterating through each message and sending.
-                    foreach (var idxMsgNode in input.Children.Where(x => x.Name == "message"))
-                    {
-                        // Creating MimeMessage.
-                        var message = new MimeMessage();
-                        var clone = idxMsgNode.Clone();
-                        signaler.Signal(".mime.create", clone);
-                        message.Body = clone.Value as MimeEntity;
+                    // Decorating MimeMessage with subject.
+                    var subject = idxMsgNode.Children.FirstOrDefault(x => x.Name == "subject")?.GetEx<string>();
+                    message.Subject = subject;
 
-                        // Decorating MimeMessage with subject.
-                        var subject = idxMsgNode.Children.FirstOrDefault(x => x.Name == "subject")?.GetEx<string>();
-                        message.Subject = subject;
+                    // Decorating MimeMessage with from, to, cc, and bcc.
+                    message.From.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "from")));
+                    message.To.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "to")));
+                    message.Cc.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "cc")));
+                    message.Bcc.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "bcc")));
 
-                        // Decorating MimeMessage with from, to, cc, and bcc.
-                        message.From.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "from")));
-                        message.To.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "to")));
-                        message.Cc.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "cc")));
-                        message.Bcc.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "bcc")));
-
-                        // Sending message over existing SMTP connection.
-                        await client.SendAsync(message);
-                    }
+                    // Sending message over existing SMTP connection.
+                    await _client.SendAsync(message);
                 }
-                finally
-                {
-                    // Disconnecting and sending QUIT signal to SMTP server.
-                    await client.DisconnectAsync(true);
-                }
+            }
+            finally
+            {
+                // Disconnecting and sending QUIT signal to SMTP server.
+                await _client.DisconnectAsync(true);
             }
         }
 

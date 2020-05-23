@@ -16,4 +16,8 @@
     <ProjectReference Include="..\..\magic.signals\magic.signals.contracts\dev_magic.signals.contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="contracts\" />
+    <Folder Include="services\" />
+  </ItemGroup>
 </Project>

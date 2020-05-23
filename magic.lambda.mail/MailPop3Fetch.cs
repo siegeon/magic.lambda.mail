@@ -11,9 +11,9 @@ using MailKit.Net.Pop3;
 using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
-using magic.lambda.mime.helpers;
+using magic.lambda.mail.helpers;
 
-namespace magic.lambda.mime
+namespace magic.lambda.mail
 {
     /// <summary>
     /// Fetches all new messages from the specified POP3 account.

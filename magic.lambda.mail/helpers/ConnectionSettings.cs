@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using magic.node;
 using magic.node.extensions;
 
-namespace magic.lambda.mime.helpers
+namespace magic.lambda.mail.helpers
 {
     /*
      * Helper class to retrieve server connection settings (POP3/SMTP) from Node, and defaulting to configuration
