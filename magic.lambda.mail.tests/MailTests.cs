@@ -218,6 +218,9 @@ wait.mail.smtp.send
                     Assert.Equal("jane@doe.com", (msg.From.First() as MailboxAddress).Address);
                     Assert.Empty(msg.Cc);
                     Assert.Empty(msg.Bcc);
+                    Assert.Equal(@"Content-Type: text/plain
+
+Body content", msg.Body.ToString());
                     sendInvoked = true;
                 },
                 null,
