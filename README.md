@@ -80,7 +80,7 @@ similar.
 mail.smtp.send
    message
       to
-         John Doe:john@doe.com
+         Jane Doe:jane@doe.com
       subject:Subject line
       entity:text/plain
          content:Body content
