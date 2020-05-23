@@ -14,7 +14,7 @@ namespace magic.lambda.mail.tests
     public class SmtpTests
     {
         [Fact]
-        public async Task ConnectTestExplicitServerAsync()
+        public async Task ConnectWithServer()
         {
             var connectInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
@@ -45,7 +45,7 @@ wait.mail.smtp.send
         }
 
         [Fact]
-        public async Task ConnectTestConfigurationServerAsync_01()
+        public async Task ConnectWithConfig_01()
         {
             var connectInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
@@ -75,9 +75,10 @@ wait.mail.smtp.send
         }
 
         [Fact]
-        public async Task ConnectTestConfigurationServerAsync_02()
+        public async Task ConnectWithConfig_02()
         {
             var connectInvoked = false;
+            var authenticateInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
 wait.mail.smtp.send
    server
@@ -98,40 +99,19 @@ wait.mail.smtp.send
                     Assert.Equal(321, port);
                     Assert.False(useSsl);
                     connectInvoked = true;
-                });
-            Assert.True(connectInvoked);
-        }
-
-        [Fact]
-        public async Task ConnectTestConnectConnectAsync_01()
-        {
-            var authenticateInvoked = false;
-            var lambda = await Common.EvaluateAsync(@"
-wait.mail.smtp.send
-   server
-      username:xxx
-      password:yyy
-   message
-      to
-         John Doe:john@doe.com
-      from
-         Jane Doe:jane@doe.com
-      subject:Subject line
-      entity:text/plain
-         content:Body content",
-                (msg) => { },
-                null,
+                },
                 (username, password) =>
                 {
                     Assert.Equal("xxx", username);
                     Assert.Equal("yyy", password);
                     authenticateInvoked = true;
                 });
+            Assert.True(connectInvoked);
             Assert.True(authenticateInvoked);
         }
 
         [Fact]
-        public async Task ConnectTestConnectConnectAsync_02()
+        public async Task ConcectWithConfig_03()
         {
             var authenticateInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
@@ -157,7 +137,7 @@ wait.mail.smtp.send
         }
 
         [Fact]
-        public async Task ConnectTestConnectConnectAsync_03()
+        public async Task ConnectWithConfig_04()
         {
             var authenticateInvoked = false;
             var connectInvoked = false;
@@ -190,45 +170,7 @@ wait.mail.smtp.send
         }
 
         [Fact]
-        public async Task SendConfigFromAsync()
-        {
-            var authenticateInvoked = false;
-            var connectInvoked = false;
-            var sendInvoked = false;
-            var lambda = await Common.EvaluateAsync(@"
-wait.mail.smtp.send
-   message
-      to
-         John Doe:john@doe.com
-      subject:Subject line
-      entity:text/plain
-         content:Body content",
-                (msg) =>
-                {
-                    Assert.Equal("Foo Bar", (msg.From.First() as MailboxAddress).Name);
-                    Assert.Equal("foo@bar.com", (msg.From.First() as MailboxAddress).Address);
-                    sendInvoked = true;
-                },
-                (host, port, useSsl) =>
-                {
-                    Assert.Equal("foo2.com", host);
-                    Assert.Equal(321, port);
-                    Assert.False(useSsl);
-                    connectInvoked = true;
-                },
-                (username, password) =>
-                {
-                    Assert.Equal("xxx2", username);
-                    Assert.Equal("yyy2", password);
-                    authenticateInvoked = true;
-                });
-            Assert.True(authenticateInvoked);
-            Assert.True(connectInvoked);
-            Assert.True(sendInvoked);
-        }
-
-        [Fact]
-        public void Send_01()
+        public void SendSync()
         {
             var sendInvoked = false;
             var lambda = Common.Evaluate(@"
@@ -267,7 +209,69 @@ Body content", msg.Body.ToString());
         }
 
         [Fact]
-        public async Task SendAsync_01()
+        public void SendTwoMessages()
+        {
+            var no = 0;
+            var sendInvoked = false;
+            var lambda = Common.Evaluate(@"
+mail.smtp.send
+   message
+      to
+         John Doe1:john1@doe.com
+      from
+         Jane Doe1:jane1@doe.com
+      subject:Subject line 1
+      entity:text/plain
+         content:Body content 1
+   message
+      to
+         John Doe2:john2@doe.com
+      from
+         Jane Doe2:jane2@doe.com
+      subject:Subject line 2
+      entity:text/plain
+         content:Body content 2",
+                (msg) =>
+                {
+                    Assert.NotNull(msg);
+                    Assert.NotEqual(typeof(Multipart), msg.Body.GetType());
+                    Assert.Equal("text", msg.Body.ContentType.MediaType);
+                    Assert.Equal("plain", msg.Body.ContentType.MediaSubtype);
+                    Assert.Single(msg.To);
+                    Assert.Single(msg.From);
+                    Assert.Empty(msg.Cc);
+                    Assert.Empty(msg.Bcc);
+                    if (no == 0)
+                    {
+                        Assert.Equal("Subject line 1", msg.Subject);
+                        Assert.Equal("John Doe1", msg.To.First().Name);
+                        Assert.Equal("john1@doe.com", (msg.To.First() as MailboxAddress).Address);
+                        Assert.Equal("Jane Doe1", msg.From.First().Name);
+                        Assert.Equal(@"Content-Type: text/plain
+
+Body content 1", msg.Body.ToString());
+                    }
+                    else
+                    {
+                        Assert.Equal("Subject line 2", msg.Subject);
+                        Assert.Equal("John Doe2", msg.To.First().Name);
+                        Assert.Equal("john2@doe.com", (msg.To.First() as MailboxAddress).Address);
+                        Assert.Equal("Jane Doe2", msg.From.First().Name);
+                        Assert.Equal(@"Content-Type: text/plain
+
+Body content 2", msg.Body.ToString());
+                    }
+                    no += 1;
+                    sendInvoked = true;
+                },
+                null,
+                null);
+            Assert.True(sendInvoked);
+            Assert.Equal(2, no);
+        }
+
+        [Fact]
+        public async Task SendAsync()
         {
             var sendInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
@@ -306,7 +310,45 @@ Body content", msg.Body.ToString());
         }
 
         [Fact]
-        public async Task SendAsync_02()
+        public async Task SendConfigFrom()
+        {
+            var authenticateInvoked = false;
+            var connectInvoked = false;
+            var sendInvoked = false;
+            var lambda = await Common.EvaluateAsync(@"
+wait.mail.smtp.send
+   message
+      to
+         John Doe:john@doe.com
+      subject:Subject line
+      entity:text/plain
+         content:Body content",
+                (msg) =>
+                {
+                    Assert.Equal("Foo Bar", (msg.From.First() as MailboxAddress).Name);
+                    Assert.Equal("foo@bar.com", (msg.From.First() as MailboxAddress).Address);
+                    sendInvoked = true;
+                },
+                (host, port, useSsl) =>
+                {
+                    Assert.Equal("foo2.com", host);
+                    Assert.Equal(321, port);
+                    Assert.False(useSsl);
+                    connectInvoked = true;
+                },
+                (username, password) =>
+                {
+                    Assert.Equal("xxx2", username);
+                    Assert.Equal("yyy2", password);
+                    authenticateInvoked = true;
+                });
+            Assert.True(authenticateInvoked);
+            Assert.True(connectInvoked);
+            Assert.True(sendInvoked);
+        }
+
+        [Fact]
+        public async Task SendWithCcAndBcc()
         {
             var sendInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
@@ -353,7 +395,7 @@ wait.mail.smtp.send
         }
 
         [Fact]
-        public async Task SendAsync_02_Throws()
+        public async Task SendWithoutTo_Throws()
         {
             await Assert.ThrowsAsync<ArgumentNullException>(async () =>
             {
