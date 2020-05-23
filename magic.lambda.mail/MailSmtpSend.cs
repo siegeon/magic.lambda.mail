@@ -18,7 +18,7 @@ using System.Collections.Generic;
 namespace magic.lambda.mime
 {
     /// <summary>
-    /// Sends a single email message through an SMTP server.
+    /// Sends email messages through an SMTP server.
     /// </summary>
     [Slot(Name = "wait.mail.smtp.send")]
     public class MailSmtpSend : ISlotAsync
