@@ -34,7 +34,14 @@ You can send multiple **[message]** objects at the same time, using the same SMT
 The entirety of the **[server]** node above is optional, and if not given, will be fetched from your
 configuration settings, using the `IConfiguration` object, which is given through dependency injection.
 You can also override only one or two parts in your **[server]** segment above, and have the system
-read the rest of the settings from your application's configuration.
+read the rest of the settings from your application's configuration. Below are the keys used to fetch
+configuration settings for SMTP connections, if not explicitly given as part of invocation.
+
+* magic.smtp.host
+* magic.smtp.port
+* magic.smtp.secure
+* magic.smtp.username
+* magic.smtp.password
 
 To construct your email's **[message]** part, [see Magic Mime for details](https://github.com/polterguy/magic.lambda.mime).
 
@@ -57,8 +64,16 @@ mail.pop3.fetch
 ```
 
 Just like its SMTP counterpart, parts of, or the entirety of the above **[server]** node is optional.
+Below are the keys used to fetch configuration settings for SMTP connections, if not explicitly given
+as part of invocation.
+
+* magic.pop3.host
+* magic.pop3.port
+* magic.pop3.secure
+* magic.pop3.username
+* magic.pop3.password
 
 Your **[.lambda]** callback will be invoked with a single **[.message]** node, containing the
-structured version of the MIME message wrapping the actual email. Refer to
+structured version of the MIME message wrapping the actual email message. Refer to
 [see Magic Mime for details](https://github.com/polterguy/magic.lambda.mime) to understand this
 structure.
