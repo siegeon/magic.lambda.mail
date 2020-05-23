@@ -28,14 +28,6 @@ mail.smtp.send
       subject:Subject line
       entity:text/plain
          content:Body content
-   message
-      to
-         Howdy Doe:howdy@doe.com
-      from
-         Jane Doe:jane@doe.com
-      subject:Subject line II
-      entity:text/plain
-         content:Body other email body content.
 ```
 
 You can send multiple **[message]**s at the same time, using the same SMTP connection and credentials.
