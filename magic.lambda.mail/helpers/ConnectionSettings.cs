@@ -24,18 +24,18 @@ namespace magic.lambda.mime.helpers
                 configuration[$"magic:{serverType}:server"] ??
                 throw new ArgumentNullException("No [server] provided");
 
-            var port = input.Children.SingleOrDefault(x => x.Name == "port")?.GetEx<int>() ??
+            Port = input.Children.SingleOrDefault(x => x.Name == "port")?.GetEx<int>() ??
                 (configuration[$"magic:{serverType}:port"] != null ? new int?(int.Parse(configuration[$"magic:{serverType}:port"])) : null) ??
                 throw new ArgumentNullException("No [port] provided to [wait.mail.pop3.fetch]");
 
-            var ssl = input.Children.SingleOrDefault(x => x.Name == "secure")?.GetEx<bool>() ??
+            Secure = input.Children.SingleOrDefault(x => x.Name == "secure")?.GetEx<bool>() ??
                 (configuration[$"magic:{serverType}:secure"] != null ? new bool?(bool.Parse(configuration[$"magic:{serverType}:secure"])) : null) ??
                 false;
 
-            var username = input.Children.SingleOrDefault(x => x.Name == "username")?.GetEx<string>() ??
+            Username = input.Children.SingleOrDefault(x => x.Name == "username")?.GetEx<string>() ??
                 configuration[$"magic:{serverType}:username"];
 
-            var password = input.Children.SingleOrDefault(x => x.Name == "password")?.GetEx<string>() ??
+            Password = input.Children.SingleOrDefault(x => x.Name == "password")?.GetEx<string>() ??
                 configuration[$"magic:{serverType}:password"];
         }
 

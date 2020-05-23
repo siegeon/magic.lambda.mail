@@ -40,7 +40,7 @@ namespace magic.lambda.mime
             var settings = new ConnectionSettings(_configuration, input, "smtp");
 
             // Retrieving message we should actually send.
-            var messageNode = input.Children.FirstOrDefault(x => x.Name == "entity") ??
+            var messageNode = input.Children.FirstOrDefault(x => x.Name == "message") ??
                 throw new ArgumentNullException("No [message] provided to [wait.mail.smtp.send]");
 
             // Creating MimeMessage.
@@ -62,7 +62,7 @@ namespace magic.lambda.mime
             var to = input.Children.FirstOrDefault(x => x.Name == "to")?.GetEx<string>() ??
                 throw new ArgumentNullException("No [to] recipient given in your email");
             var toName = input.Children.FirstOrDefault(x => x.Name == "to-name")?.GetEx<string>();
-            message.To.Add(new MailboxAddress(fromName, from));
+            message.To.Add(new MailboxAddress(toName, to));
 
             // Creating client, and sending message.
             using (var client = new SmtpClient())
