@@ -20,8 +20,9 @@ namespace magic.lambda.mail
     /// <summary>
     /// Sends email messages through an SMTP server.
     /// </summary>
+    [Slot(Name = "mail.smtp.send")]
     [Slot(Name = "wait.mail.smtp.send")]
-    public class MailSmtpSend : ISlotAsync
+    public class MailSmtpSend : ISlotAsync, ISlot
     {
         readonly IConfiguration _configuration;
         readonly contracts.ISmtpClient _client;
@@ -30,6 +31,57 @@ namespace magic.lambda.mail
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _client = client ?? throw new ArgumentNullException(nameof(client));
+        }
+
+        /// <summary>
+        /// Implementation of your slot.
+        /// </summary>
+        /// <param name="signaler">Signaler that raised the signal.</param>
+        /// <param name="input">Arguments to your slot.</param>
+        public void Signal(ISignaler signaler, Node input)
+        {
+            // Retrieving server connection settings.
+            var settings = new ConnectionSettings(
+                _configuration,
+                input.Children.FirstOrDefault(x => x.Name == "server"),
+                "smtp");
+
+            // Connecting and authenticating (unless username is null).
+            _client.Connect(settings.Server, settings.Port, settings.Secure);
+            try
+            {
+                // Checking if we're supposed to authenticate
+                if (settings.Username != null || settings.Password != null)
+                    _client.Authenticate(settings.Username, settings.Password);
+
+                // Iterating through each message and sending.
+                foreach (var idxMsgNode in input.Children.Where(x => x.Name == "message"))
+                {
+                    // Creating MimeMessage.
+                    var message = new MimeMessage();
+                    var clone = idxMsgNode.Clone();
+                    signaler.Signal(".mime.create", clone);
+                    message.Body = clone.Value as MimeEntity;
+
+                    // Decorating MimeMessage with subject.
+                    var subject = idxMsgNode.Children.FirstOrDefault(x => x.Name == "subject")?.GetEx<string>();
+                    message.Subject = subject;
+
+                    // Decorating MimeMessage with from, to, cc, and bcc.
+                    message.From.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "from")));
+                    message.To.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "to")));
+                    message.Cc.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "cc")));
+                    message.Bcc.AddRange(GetAddresses(idxMsgNode.Children.FirstOrDefault(x => x.Name == "bcc")));
+
+                    // Sending message over existing SMTP connection.
+                    _client.Send(message);
+                }
+            }
+            finally
+            {
+                // Disconnecting and sending QUIT signal to SMTP server.
+                _client.Disconnect(true);
+            }
         }
 
         /// <summary>
