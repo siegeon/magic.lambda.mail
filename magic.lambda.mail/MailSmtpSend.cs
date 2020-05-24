@@ -4,6 +4,7 @@
  */
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -57,11 +58,20 @@ namespace magic.lambda.mail
                 // Iterating through each message and sending.
                 foreach (var idxMsgNode in input.Children.Where(x => x.Name == "message"))
                 {
-                    // Creating MimeMessage.
-                    var message = CreateMessage(signaler, idxMsgNode);
-
-                    // Sending message over existing SMTP connection.
-                    _client.Send(message);
+                    // Creating MimeMessage, making sure we dispose any streams created in the process.
+                    var tuple = CreateMessage(signaler, idxMsgNode);
+                    try
+                    {
+                        // Sending message over existing SMTP connection.
+                        _client.Send(tuple.Item1);
+                    }
+                    finally
+                    {
+                        foreach (var idx in tuple.Item2)
+                        {
+                            idx.Dispose();
+                        }
+                    }
                 }
             }
             finally
@@ -95,11 +105,20 @@ namespace magic.lambda.mail
                 // Iterating through each message and sending.
                 foreach (var idxMsgNode in input.Children.Where(x => x.Name == "message"))
                 {
-                    // Creating MimeMessage.
-                    var message = CreateMessage(signaler, idxMsgNode);
-
-                    // Sending message over existing SMTP connection.
-                    await _client.SendAsync(message);
+                    // Creating MimeMessage, making sure we dispose any streams created in the process.
+                    var tuple = CreateMessage(signaler, idxMsgNode);
+                    try
+                    {
+                        // Sending message over existing SMTP connection.
+                        await _client.SendAsync(tuple.Item1);
+                    }
+                    finally
+                    {
+                        foreach (var idx in tuple.Item2)
+                        {
+                            idx.Dispose();
+                        }
+                    }
                 }
             }
             finally
@@ -114,24 +133,31 @@ namespace magic.lambda.mail
         /*
          * Creates a MimeMessage according to given node, and returns to caller.
          */
-        MimeMessage CreateMessage(ISignaler signaler, Node node)
+        Tuple<MimeMessage, List<Stream>> CreateMessage(ISignaler signaler, Node node)
         {
+            // Creating message.
             var message = new MimeMessage();
-            var clone = node.Clone();
-            signaler.Signal(".mime.create", clone);
-            message.Body = clone.Value as MimeEntity ??
-                throw new ArgumentException("Invalid [message] supplied");
 
             // Decorating MimeMessage with subject.
-            var subject = node.Children.FirstOrDefault(x => x.Name == "subject")?.GetEx<string>();
-            message.Subject = subject;
+            message.Subject = node.Children
+                .FirstOrDefault(x => x.Name == "subject")?
+                .GetEx<string>() ??
+                ""; // Defaulting to empty string as subject.
 
             // Decorating MimeMessage with from, to, cc, and bcc.
             message.To.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "to"), true));
             message.From.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "from"), true, "magic:smtp:"));
             message.Cc.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "cc")));
             message.Bcc.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "bcc")));
-            return message;
+
+            // Creating actual MimeEntity to send.
+            var clone = node.Clone();
+            signaler.Signal(".mime.create", clone);
+            var tuple = clone.Value as Tuple<MimeEntity, List<Stream>>;
+            message.Body = tuple.Item1;
+
+            // Returning message (and streams) to caller.
+            return new Tuple<MimeMessage, List<Stream>>(message, tuple.Item2);
         }
 
         /*
