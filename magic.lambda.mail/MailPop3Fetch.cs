@@ -132,7 +132,7 @@ namespace magic.lambda.mail
         {
             var exe = lambda.Clone();
             var messageNode = new Node(".message");
-            exe.Add(messageNode);
+            exe.Insert(0, messageNode);
             if (raw)
             {
                 // Handling message in raw format.
@@ -146,7 +146,6 @@ namespace magic.lambda.mail
 
                 // Adding semantically parsed message to [.message] node.
                 messageNode.AddRange(parseNode.Children);
-                exe.Add(messageNode);
             }
             return exe;
         }
