@@ -26,7 +26,7 @@ namespace magic.lambda.mail.helpers
 
             Port = input?.Children.SingleOrDefault(x => x.Name == "port")?.GetEx<int>() ??
                 (configuration[$"magic:{serverType}:port"] != null ? new int?(int.Parse(configuration[$"magic:{serverType}:port"])) : null) ??
-                throw new ArgumentNullException("No [port] provided to [wait.mail.pop3.fetch]");
+                throw new ArgumentNullException("No [port] provided");
 
             Secure = input?.Children.SingleOrDefault(x => x.Name == "secure")?.GetEx<bool>() ??
                 (configuration[$"magic:{serverType}:secure"] != null ? new bool?(bool.Parse(configuration[$"magic:{serverType}:secure"])) : null) ??

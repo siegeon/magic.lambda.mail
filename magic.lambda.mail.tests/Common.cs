@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using MimeKit;
 using magic.node;
 using magic.signals.services;
 using magic.signals.contracts;
@@ -24,7 +23,7 @@ namespace magic.lambda.mail.tests
     {
         static public Node Evaluate(
             string hl,
-            MockSmtpClient smtp,
+            MockSmtpClient smtp = null,
             MockPop3Client pop3 = null)
         {
             var services = Initialize(smtp, pop3);

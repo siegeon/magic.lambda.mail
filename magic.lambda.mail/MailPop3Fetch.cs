@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
-using MailKit.Net.Pop3;
 using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
@@ -41,7 +40,10 @@ namespace magic.lambda.mail
         public void Signal(ISignaler signaler, Node input)
         {
             // Retrieving server connection settings.
-            var settings = new ConnectionSettings(_configuration, input, "pop3");
+            var settings = new ConnectionSettings(
+                _configuration,
+                input.Children.FirstOrDefault(x => x.Name == "server"),
+                "pop3");
 
             // Maximum number of emails to fetch.
             var max = input.Children.SingleOrDefault(x => x.Name == "max")?.GetEx<int>() ?? 50;
@@ -83,7 +85,10 @@ namespace magic.lambda.mail
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
             // Retrieving server connection settings.
-            var settings = new ConnectionSettings(_configuration, input, "pop3");
+            var settings = new ConnectionSettings(
+                _configuration,
+                input.Children.FirstOrDefault(x => x.Name == "server"),
+                "pop3");
 
             // Maximum number of emails to fetch.
             var max = input.Children.SingleOrDefault(x => x.Name == "max")?.GetEx<int>() ?? 50;
