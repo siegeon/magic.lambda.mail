@@ -101,6 +101,7 @@ mail.pop3.fetch
       username:xxx
       password:yyy
    max:int:50
+   raw:bool:false
    .lambda
       /*
        * Some lambda object invoked once for every email fetched.
@@ -117,6 +118,9 @@ as part of invocation.
 * magic.pop3.secure
 * magic.pop3.username
 * magic.pop3.password
+
+Notice, if **[raw]** is true, the message will _not_ be parsed and turned into a structural lambda object,
+but passed into your **[.lambda]** as its raw MIME message instead. The default value for **[raw]** is false.
 
 Your **[.lambda]** callback will be invoked with a single **[.message]** node, containing the
 structured version of the MIME message wrapping the actual email message. Refer to

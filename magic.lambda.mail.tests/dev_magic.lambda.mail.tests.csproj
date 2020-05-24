@@ -27,4 +27,7 @@
     <ProjectReference Include="..\magic.lambda.mail\dev_magic.lambda.mail.csproj" />
     <ProjectReference Include="..\..\magic.lambda.mime\magic.lambda.mime\dev_magic.lambda.mime.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="helpers\" />
+  </ItemGroup>
 </Project>
