@@ -135,13 +135,6 @@ namespace magic.lambda.mail
             var messageNode = new Node(".message");
             exe.Insert(0, messageNode);
 
-            // Handling meta data of message.
-            messageNode.Add(new Node("subject", message.Subject));
-            AddRecipient(message.From.Select(x => x as MailboxAddress), messageNode, "from");
-            AddRecipient(message.To.Select(x => x as MailboxAddress), messageNode, "to");
-            AddRecipient(message.Cc.Select(x => x as MailboxAddress), messageNode, "cc");
-            AddRecipient(message.Bcc.Select(x => x as MailboxAddress), messageNode, "bcc");
-
             // Handling body of message.
             if (raw)
             {
@@ -150,6 +143,13 @@ namespace magic.lambda.mail
             }
             else
             {
+                // Handling meta data of message.
+                messageNode.Add(new Node("subject", message.Subject));
+                AddRecipient(message.From.Select(x => x as MailboxAddress), messageNode, "from");
+                AddRecipient(message.To.Select(x => x as MailboxAddress), messageNode, "to");
+                AddRecipient(message.Cc.Select(x => x as MailboxAddress), messageNode, "cc");
+                AddRecipient(message.Bcc.Select(x => x as MailboxAddress), messageNode, "bcc");
+
                 // Parsing message.
                 var parseNode = new Node("", message.Body);
                 signaler.Signal(".mime.parse", parseNode);

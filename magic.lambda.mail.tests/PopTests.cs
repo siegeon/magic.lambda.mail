@@ -244,5 +244,74 @@ wait.mail.pop3.fetch
             Assert.Equal(1, retrieveInvoked);
             Assert.Equal(1, RetrieveOneMessageSlot._invocationCount);
         }
+
+        [Slot(Name = "RetrieveOneMessageRawSlot")]
+        class RetrieveOneMessageRawSlot : ISlot
+        {
+            public static int _invocationCount = 0;
+            public void Signal(ISignaler signaler, Node input)
+            {
+                _invocationCount += 1;
+                var message = input.Children.SingleOrDefault(x => x.Name == ".message");
+                Assert.NotNull(message);
+                Assert.Contains("MIME-Version: 1.0", message.GetEx<string>());
+                Assert.Contains("Body of message", message.GetEx<string>());
+                Assert.Contains("This is subject", message.GetEx<string>());
+                Assert.Contains("foo@bar.com", message.GetEx<string>());
+            }
+        }
+
+        [Fact]
+        public void RetrieveOneMessageRaw()
+        {
+            var authenticateInvoked = false;
+            var connectInvoked = false;
+            var retrieveInvoked = 0;
+            var lambda = Common.Evaluate(@"
+mail.pop3.fetch
+   raw:true
+   .lambda
+      add:x:+
+         get-nodes:x:@.message
+      RetrieveOneMessageRawSlot",
+                null,
+                new helpers.MockPop3Client(
+                    (index) =>
+                    {
+                        Assert.Equal(0, index);
+                        retrieveInvoked += 1;
+                        var message = new MimeMessage();
+                        message.From.Add(new MailboxAddress("Foo", "foo@bar.com"));
+                        message.To.Add(new MailboxAddress("John", "john@doe.com"));
+                        message.Subject = "This is subject";
+
+                        message.Body = new TextPart("plain")
+                        {
+                            Text = @"Body of message"
+                        };
+                        return message;
+                    },
+                    () =>
+                    {
+                        return 1;
+                    },
+                    (host, port, useSsl) =>
+                    {
+                        Assert.Equal("foo2.com", host);
+                        Assert.Equal(321, port);
+                        Assert.False(useSsl);
+                        connectInvoked = true;
+                    },
+                    (username, password) =>
+                    {
+                        Assert.Equal("xxx2", username);
+                        Assert.Equal("yyy2", password);
+                        authenticateInvoked = true;
+                    }));
+            Assert.True(authenticateInvoked);
+            Assert.True(connectInvoked);
+            Assert.Equal(1, retrieveInvoked);
+            Assert.Equal(1, RetrieveOneMessageSlot._invocationCount);
+        }
     }
 }
