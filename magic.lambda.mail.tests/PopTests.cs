@@ -178,8 +178,18 @@ wait.mail.pop3.fetch
                 Assert.Equal("text/plain", entity.GetEx<string>());
                 Assert.Single(entity.Children);
                 Assert.Equal("content", entity.Children.First().Name);
+                Assert.Empty(entity.Children.First().Children);
                 Assert.Equal("Body of message", entity.Children.First().GetEx<string>());
                 Assert.Single(entity.Children);
+                Assert.Equal("This is subject", input.Children.FirstOrDefault(x => x.Name == "subject")?.GetEx<string>());
+                Assert.Single(input.Children.FirstOrDefault(x => x.Name == "from")?.Children);
+                Assert.Single(input.Children.FirstOrDefault(x => x.Name == "to")?.Children);
+                Assert.Equal("Foo", input.Children.FirstOrDefault(x => x.Name == "from")?.Children?.FirstOrDefault()?.Name);
+                Assert.Equal("foo@bar.com", input.Children.FirstOrDefault(x => x.Name == "from")?.Children?.FirstOrDefault()?.GetEx<string>());
+                Assert.Equal("John", input.Children.FirstOrDefault(x => x.Name == "to")?.Children?.FirstOrDefault()?.Name);
+                Assert.Equal("john@doe.com", input.Children.FirstOrDefault(x => x.Name == "to")?.Children?.FirstOrDefault()?.GetEx<string>());
+                Assert.Null(input.Children.FirstOrDefault(x => x.Name == "cc"));
+                Assert.Null(input.Children.FirstOrDefault(x => x.Name == "bcc"));
             }
         }
 
@@ -202,9 +212,9 @@ wait.mail.pop3.fetch
                         Assert.Equal(0, index);
                         retrieveInvoked += 1;
                         var message = new MimeMessage();
-                        message.From.Add(new MailboxAddress("Joey", "joey@friends.com"));
-                        message.To.Add(new MailboxAddress("Alice", "alice@wonderland.com"));
-                        message.Subject = "How you doin?";
+                        message.From.Add(new MailboxAddress("Foo", "foo@bar.com"));
+                        message.To.Add(new MailboxAddress("John", "john@doe.com"));
+                        message.Subject = "This is subject";
 
                         message.Body = new TextPart("plain")
                         {

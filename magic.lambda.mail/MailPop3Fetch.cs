@@ -6,6 +6,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
 using magic.node;
@@ -133,6 +134,15 @@ namespace magic.lambda.mail
             var exe = lambda.Clone();
             var messageNode = new Node(".message");
             exe.Insert(0, messageNode);
+
+            // Handling meta data of message.
+            messageNode.Add(new Node("subject", message.Subject));
+            AddRecipient(message.From.Select(x => x as MailboxAddress), messageNode, "from");
+            AddRecipient(message.To.Select(x => x as MailboxAddress), messageNode, "to");
+            AddRecipient(message.Cc.Select(x => x as MailboxAddress), messageNode, "cc");
+            AddRecipient(message.Bcc.Select(x => x as MailboxAddress), messageNode, "bcc");
+
+            // Handling body of message.
             if (raw)
             {
                 // Handling message in raw format.
@@ -148,6 +158,20 @@ namespace magic.lambda.mail
                 messageNode.AddRange(parseNode.Children);
             }
             return exe;
+        }
+
+        void AddRecipient(IEnumerable<MailboxAddress> items, Node node, string nodeName)
+        {
+            if (items == null || !items.Any())
+                return;
+            var collectionNode = new Node(nodeName);
+            foreach (var idx in items)
+            {
+                if (idx == null)
+                    continue; // Might be other types of addresses in theory ...
+                collectionNode.Add(new Node(idx.Name, idx.Address));
+            }
+            node.Add(collectionNode);
         }
 
         #endregion
