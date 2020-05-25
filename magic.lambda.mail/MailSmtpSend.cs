@@ -14,6 +14,7 @@ using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
 using magic.lambda.mail.helpers;
+using magic.lambda.mime.helpers;
 using contracts = magic.lambda.mime.contracts;
 
 namespace magic.lambda.mail
@@ -59,18 +60,15 @@ namespace magic.lambda.mail
                 foreach (var idxMsgNode in input.Children.Where(x => x.Name == "message"))
                 {
                     // Creating MimeMessage, making sure we dispose any streams created in the process.
-                    var tuple = CreateMessage(signaler, idxMsgNode);
+                    var message = CreateMessage(signaler, idxMsgNode);
                     try
                     {
                         // Sending message over existing SMTP connection.
-                        _client.Send(tuple.Item1);
+                        _client.Send(message);
                     }
                     finally
                     {
-                        foreach (var idx in tuple.Item2)
-                        {
-                            idx.Dispose();
-                        }
+                        MimeBuilder.Dispose(message.Body);
                     }
                 }
             }
@@ -106,18 +104,15 @@ namespace magic.lambda.mail
                 foreach (var idxMsgNode in input.Children.Where(x => x.Name == "message"))
                 {
                     // Creating MimeMessage, making sure we dispose any streams created in the process.
-                    var tuple = CreateMessage(signaler, idxMsgNode);
+                    var message = CreateMessage(signaler, idxMsgNode);
                     try
                     {
                         // Sending message over existing SMTP connection.
-                        await _client.SendAsync(tuple.Item1);
+                        await _client.SendAsync(message);
                     }
                     finally
                     {
-                        foreach (var idx in tuple.Item2)
-                        {
-                            idx.Dispose();
-                        }
+                        MimeBuilder.Dispose(message.Body);
                     }
                 }
             }
@@ -133,16 +128,17 @@ namespace magic.lambda.mail
         /*
          * Creates a MimeMessage according to given node, and returns to caller.
          */
-        Tuple<MimeMessage, List<Stream>> CreateMessage(ISignaler signaler, Node node)
+        MimeMessage CreateMessage(ISignaler signaler, Node node)
         {
             // Creating message.
-            var message = new MimeMessage();
-
-            // Decorating MimeMessage with subject.
-            message.Subject = node.Children
-                .FirstOrDefault(x => x.Name == "subject")?
-                .GetEx<string>() ??
-                ""; // Defaulting to empty string as subject.
+            var message = new MimeMessage
+            {
+                // Decorating MimeMessage with subject.
+                Subject = node.Children
+                    .FirstOrDefault(x => x.Name == "subject")?
+                    .GetEx<string>() ??
+                    "" // Defaulting to empty string as subject.
+            };
 
             // Decorating MimeMessage with from, to, cc, and bcc.
             message.To.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "to"), true));
@@ -153,11 +149,11 @@ namespace magic.lambda.mail
             // Creating actual MimeEntity to send.
             var clone = node.Clone();
             signaler.Signal(".mime.create", clone);
-            var tuple = clone.Value as Tuple<MimeEntity, List<Stream>>;
-            message.Body = tuple.Item1;
+            var entity = clone.Value as MimeEntity;
+            message.Body = entity;
 
             // Returning message (and streams) to caller.
-            return new Tuple<MimeMessage, List<Stream>>(message, tuple.Item2);
+            return message;
         }
 
         /*
