@@ -87,6 +87,22 @@ mail.smtp.send
 ```
 
 You can also add **[cc]** and **[bcc]** recipients for your emails, using the same structure you're using for **[to]**.
+In addition you can attach files to your messages, by instead of adding a **[content]** node to your invocation, adding
+a **[filename]** node, with a relative path pointing to the file you want to attach to your message. Below is an example
+of an email with a single attachment.
+
+```
+mail.smtp.send
+   message
+      to
+         Jane Doe:jane@doe.com
+      subject:Subject line
+      entity:multipart/mixed
+        entity:text/plain
+           content:Body content
+        entity:text/plain
+           filename:foo.txt
+```
 
 To construct your email's **[message]** part, [see Magic Mime for details](https://github.com/polterguy/magic.lambda.mime).
 
@@ -125,4 +141,6 @@ but passed into your **[.lambda]** as its raw MIME message instead. The default 
 Your **[.lambda]** callback will be invoked with a single **[.message]** node, containing the
 structured version of the MIME message wrapping the actual email message. Refer to
 [see Magic Mime for details](https://github.com/polterguy/magic.lambda.mime) to understand this
-structure.
+structure. If you choose to retrieve messages in **[raw]** format, the message node's value will contain
+the raw MIME message as text. If you choose this path, and you later want to actually parse the message,
+to make it become a structured lambda object - You can use the **[mime.parse]** slot from Magic Lambda Mime.
