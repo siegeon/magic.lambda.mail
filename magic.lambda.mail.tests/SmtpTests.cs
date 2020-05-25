@@ -5,9 +5,12 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
 using MimeKit;
+using magic.node;
+using magic.signals.contracts;
 
 namespace magic.lambda.mail.tests
 {
@@ -278,6 +281,45 @@ Body content 2", msg.Body.ToString());
         }
 
         [Fact]
+        public async Task SendConfigFrom()
+        {
+            var authenticateInvoked = false;
+            var connectInvoked = false;
+            var sendInvoked = false;
+            var lambda = await Common.EvaluateAsync(@"
+wait.mail.smtp.send
+   message
+      to
+         John Doe:john@doe.com
+      subject:Subject line
+      entity:text/plain
+         content:Body content",
+                new helpers.MockSmtpClient(
+                    (msg) =>
+                    {
+                        Assert.Equal("Foo Bar", (msg.From.First() as MailboxAddress).Name);
+                        Assert.Equal("foo@bar.com", (msg.From.First() as MailboxAddress).Address);
+                        sendInvoked = true;
+                    },
+                    (host, port, useSsl) =>
+                    {
+                        Assert.Equal("foo2.com", host);
+                        Assert.Equal(321, port);
+                        Assert.False(useSsl);
+                        connectInvoked = true;
+                    },
+                    (username, password) =>
+                    {
+                        Assert.Equal("xxx2", username);
+                        Assert.Equal("yyy2", password);
+                        authenticateInvoked = true;
+                    }));
+            Assert.True(authenticateInvoked);
+            Assert.True(connectInvoked);
+            Assert.True(sendInvoked);
+        }
+
+        [Fact]
         public async Task SendAsync()
         {
             var sendInvoked = false;
@@ -318,41 +360,43 @@ Body content", msg.Body.ToString());
         }
 
         [Fact]
-        public async Task SendConfigFrom()
+        public async Task SendWithAttachment()
         {
-            var authenticateInvoked = false;
-            var connectInvoked = false;
             var sendInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
 wait.mail.smtp.send
    message
       to
          John Doe:john@doe.com
+      from
+         Jane Doe:jane@doe.com
       subject:Subject line
       entity:text/plain
-         content:Body content",
+         filename:foo.txt",
                 new helpers.MockSmtpClient(
                     (msg) =>
                     {
-                        Assert.Equal("Foo Bar", (msg.From.First() as MailboxAddress).Name);
-                        Assert.Equal("foo@bar.com", (msg.From.First() as MailboxAddress).Address);
+                        Assert.NotNull(msg);
+                        Assert.NotEqual(typeof(Multipart), msg.Body.GetType());
+                        Assert.Equal("text", msg.Body.ContentType.MediaType);
+                        Assert.Equal("plain", msg.Body.ContentType.MediaSubtype);
+                        Assert.Equal("Subject line", msg.Subject);
+                        Assert.Single(msg.To);
+                        Assert.Equal("John Doe", msg.To.First().Name);
+                        Assert.Equal("john@doe.com", (msg.To.First() as MailboxAddress).Address);
+                        Assert.Single(msg.From);
+                        Assert.Equal("Jane Doe", msg.From.First().Name);
+                        Assert.Equal("jane@doe.com", (msg.From.First() as MailboxAddress).Address);
+                        Assert.Empty(msg.Cc);
+                        Assert.Empty(msg.Bcc);
+                        Assert.Equal(@"Content-Type: text/plain
+Content-Disposition: attachment; filename=foo.txt
+
+This is content", msg.Body.ToString());
                         sendInvoked = true;
                     },
-                    (host, port, useSsl) =>
-                    {
-                        Assert.Equal("foo2.com", host);
-                        Assert.Equal(321, port);
-                        Assert.False(useSsl);
-                        connectInvoked = true;
-                    },
-                    (username, password) =>
-                    {
-                        Assert.Equal("xxx2", username);
-                        Assert.Equal("yyy2", password);
-                        authenticateInvoked = true;
-                    }));
-            Assert.True(authenticateInvoked);
-            Assert.True(connectInvoked);
+                    null,
+                    null));
             Assert.True(sendInvoked);
         }
 
@@ -422,6 +466,15 @@ wait.mail.smtp.send
                         null,
                         null));
             });
+        }
+
+        [Slot(Name = "io.folders.root")]
+        class GetRootFolderSlot : ISlot
+        {
+            public void Signal(ISignaler signaler, Node input)
+            {
+                input.Value = Assembly.GetExecutingAssembly().Location.Replace("\\", "/").Replace("/magic.lambda.mail.tests.dll", "/");
+            }
         }
     }
 }

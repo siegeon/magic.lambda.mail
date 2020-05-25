@@ -30,4 +30,9 @@
   <ItemGroup>
     <Folder Include="helpers\" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="foo.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
