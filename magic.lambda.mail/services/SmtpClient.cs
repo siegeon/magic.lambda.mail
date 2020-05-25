@@ -13,8 +13,10 @@ namespace magic.lambda.mime.services
 {
     /// <summary>
     /// Default service implementation class for ISmtpClient.
+    /// 
+    /// Notice, class is simply an adapter towards MailKit's SmtpClient.
     /// </summary>
-    public class SmtpClient : contracts.ISmtpClient
+    public sealed class SmtpClient : contract.ISmtpClient
     {
         readonly Lazy<mk.SmtpClient> _client = new Lazy<mk.SmtpClient>(() => new mk.SmtpClient());
 

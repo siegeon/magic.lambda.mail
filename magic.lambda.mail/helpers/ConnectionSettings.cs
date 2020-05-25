@@ -15,7 +15,7 @@ namespace magic.lambda.mail.helpers
      * Helper class to retrieve server connection settings (POP3/SMTP) from Node, and defaulting to configuration
      * of application if not given explicitly as arguments.
      */
-    public class ConnectionSettings
+    internal class ConnectionSettings
     {
         public ConnectionSettings(IConfiguration configuration, Node input, string serverType)
         {
@@ -38,6 +38,8 @@ namespace magic.lambda.mail.helpers
             Password = input?.Children.SingleOrDefault(x => x.Name == "password")?.GetEx<string>() ??
                 configuration[$"magic:{serverType}:password"];
         }
+
+        public bool HasCredentials => !string.IsNullOrEmpty(Username); // Notice, password might be empty!
 
         public string Server { get; private set; }
 

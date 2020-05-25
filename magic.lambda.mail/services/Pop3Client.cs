@@ -12,9 +12,11 @@ using contract = magic.lambda.mime.contracts;
 namespace magic.lambda.mime.services
 {
     /// <summary>
-    /// Default service implementation class for ISmtpClient.
+    /// Default service implementation class for IPop3Client.
+    /// 
+    /// Notice, class is simply an adapter towards MailKit's Pop3Client
     /// </summary>
-    public class Pop3Client : contracts.IPop3Client
+    public sealed class Pop3Client : contract.IPop3Client
     {
         readonly Lazy<mk.Pop3Client> _client = new Lazy<mk.Pop3Client>(() => new mk.Pop3Client());
 

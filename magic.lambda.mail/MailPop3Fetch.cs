@@ -26,6 +26,7 @@ namespace magic.lambda.mail
     {
         readonly IConfiguration _configuration;
         readonly contracts.IPop3Client _client;
+        readonly Func<int, int, int, bool> Done = (idx, count, max) => idx < count && (max == -1 || count < max);
 
         public MailPop3Fetch(IConfiguration configuration, contracts.IPop3Client client)
         {
@@ -40,36 +41,18 @@ namespace magic.lambda.mail
         /// <param name="input">Arguments to your slot.</param>
         public void Signal(ISignaler signaler, Node input)
         {
-            // Retrieving server connection settings.
-            var settings = new ConnectionSettings(
-                _configuration,
-                input.Children.FirstOrDefault(x => x.Name == "server"),
-                "pop3");
-
-            // Maximum number of emails to fetch.
-            var max = input.Children.SingleOrDefault(x => x.Name == "max")?.GetEx<int>() ?? 50;
-            var raw = input.Children.SingleOrDefault(x => x.Name == "raw")?.GetEx<bool>() ?? false;
-
-            // Retrieving lambda callback for what to do for each message.
-            var lambda = input.Children.FirstOrDefault(x => x.Name == ".lambda") ??
-                throw new ArgumentNullException("No [.lambda] provided to [wait.mail.pop3.fetch]");
-
-            // Connecting and authenticating (unless username is null)
-            _client.Connect(settings.Server, settings.Port, settings.Secure);
+            var settings = new Pop3Settings(input, _configuration);
+            _client.Connect(settings.Connection.Server, settings.Connection.Port, settings.Connection.Secure);
             try
             {
-                // Checking if we should authenticate.
-                if (settings.Username != null || settings.Password != null)
-                    _client.Authenticate(settings.Username, settings.Password);
+                if (settings.Connection.HasCredentials)
+                    _client.Authenticate(settings.Connection.Username, settings.Connection.Password);
 
-                // Retrieving [max] number of emails.
                 var count = _client.GetMessageCount();
-                for (var idx = 0; idx < count && (max == -1 || count < max); idx++)
+                for (var idx = 0; Done(idx, count, settings.Max); idx++)
                 {
-                    // Getting message, and parsing to lambda
                     var message = _client.GetMessage(idx);
-                    var exe = HandleMessage(message, signaler, lambda, raw);
-                    signaler.Signal("eval", exe);
+                    HandleMessage(message, signaler, settings.Lambda, settings.Raw);
                 }
             }
             finally
@@ -85,36 +68,18 @@ namespace magic.lambda.mail
         /// <param name="input">Arguments to your slot.</param>
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
-            // Retrieving server connection settings.
-            var settings = new ConnectionSettings(
-                _configuration,
-                input.Children.FirstOrDefault(x => x.Name == "server"),
-                "pop3");
-
-            // Maximum number of emails to fetch.
-            var max = input.Children.SingleOrDefault(x => x.Name == "max")?.GetEx<int>() ?? 50;
-            var raw = input.Children.SingleOrDefault(x => x.Name == "raw")?.GetEx<bool>() ?? false;
-
-            // Retrieving lambda callback for what to do for each message.
-            var lambda = input.Children.FirstOrDefault(x => x.Name == ".lambda") ??
-                throw new ArgumentNullException("No [.lambda] provided to [wait.mail.pop3.fetch]");
-
-            // Connecting and authenticating (unless username is null)
-            await _client.ConnectAsync(settings.Server, settings.Port, settings.Secure);
+            var settings = new Pop3Settings(input, _configuration);
+            await _client.ConnectAsync(settings.Connection.Server, settings.Connection.Port, settings.Connection.Secure);
             try
             {
-                // Checking if we should authenticate.
-                if (settings.Username != null || settings.Password != null)
-                    await _client.AuthenticateAsync(settings.Username, settings.Password);
+                if (settings.Connection.HasCredentials)
+                    await _client.AuthenticateAsync(settings.Connection.Username, settings.Connection.Password);
 
-                // Retrieving [max] number of emails.
                 var count = await _client.GetMessageCountAsync();
-                for (var idx = 0; idx < count && (max == -1 || count < max); idx++)
+                for (var idx = 0; Done(idx, count, settings.Max); idx++)
                 {
-                    // Getting message, and parsing to lambda
                     var message = await _client.GetMessageAsync(idx);
-                    var exe = HandleMessage(message, signaler, lambda, raw);
-                    await signaler.SignalAsync("eval", exe);
+                    HandleMessage(message, signaler, settings.Lambda, settings.Raw);
                 }
             }
             finally
@@ -123,9 +88,41 @@ namespace magic.lambda.mail
             }
         }
 
-        #region [ -- Private helper methods -- ]
+        #region [ -- Private helper methods and classes -- ]
 
-        Node HandleMessage(
+        /*
+         * Helper class to encapsulate POP3 settings, such as connection settings, and other
+         * types of configurations, such as how many messages to retrieve, etc.
+         */
+        class Pop3Settings
+        {
+            public Pop3Settings(Node input, IConfiguration configuration)
+            {
+                Connection = new ConnectionSettings(
+                    configuration,
+                    input.Children.FirstOrDefault(x => x.Name == "server"),
+                    "pop3");
+
+                Max = input.Children.SingleOrDefault(x => x.Name == "max")?.GetEx<int>() ?? 50;
+                Raw = input.Children.SingleOrDefault(x => x.Name == "raw")?.GetEx<bool>() ?? false;
+                Lambda = input.Children.FirstOrDefault(x => x.Name == ".lambda") ??
+                    throw new ArgumentNullException("No [.lambda] provided to [wait.mail.pop3.fetch]");
+            }
+
+            public ConnectionSettings Connection { get; private set; }
+
+            public int Max { get; private set; }
+
+            public bool Raw { get; private set; }
+
+            public Node Lambda { get; private set; }
+        }
+
+        /*
+         * Helper method to handle one single message, by parsing it (unless raw is true), and invoking [.lambda]
+         * callback to notify client of message retrieved.
+         */
+        void HandleMessage(
             MimeMessage message,
             ISignaler signaler,
             Node lambda,
@@ -135,31 +132,29 @@ namespace magic.lambda.mail
             var messageNode = new Node(".message");
             exe.Insert(0, messageNode);
 
-            // Handling body of message.
             if (raw)
             {
-                // Handling message in raw format.
                 messageNode.Value = message.ToString();
             }
             else
             {
-                // Handling meta data of message.
                 messageNode.Add(new Node("subject", message.Subject));
                 AddRecipient(message.From.Select(x => x as MailboxAddress), messageNode, "from");
                 AddRecipient(message.To.Select(x => x as MailboxAddress), messageNode, "to");
                 AddRecipient(message.Cc.Select(x => x as MailboxAddress), messageNode, "cc");
                 AddRecipient(message.Bcc.Select(x => x as MailboxAddress), messageNode, "bcc");
 
-                // Parsing message.
                 var parseNode = new Node("", message.Body);
                 signaler.Signal(".mime.parse", parseNode);
-
-                // Adding semantically parsed message to [.message] node.
                 messageNode.AddRange(parseNode.Children);
             }
-            return exe;
+            signaler.Signal("eval", exe);
         }
 
+        /*
+         * Helper method to handle a specific type of recipient, and creating a lambda list of nodes,
+         * wrapping recipient's email address.
+         */
         void AddRecipient(IEnumerable<MailboxAddress> items, Node node, string nodeName)
         {
             if (items == null || !items.Any())
