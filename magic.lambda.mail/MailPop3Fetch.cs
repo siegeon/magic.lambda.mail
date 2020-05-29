@@ -28,6 +28,11 @@ namespace magic.lambda.mail
         readonly contracts.IPop3Client _client;
         readonly Func<int, int, int, bool> Done = (idx, count, max) => idx < count && (max == -1 || count < max);
 
+        /// <summary>
+        /// Constructor for your class.
+        /// </summary>
+        /// <param name="configuration">IConfiguration dependency provided argument.</param>
+        /// <param name="client">POP3 client implementation</param>
         public MailPop3Fetch(IConfiguration configuration, contracts.IPop3Client client)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));

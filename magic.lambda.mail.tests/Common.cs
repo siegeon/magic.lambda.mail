@@ -60,22 +60,22 @@ namespace magic.lambda.mail.tests
             var mockConfiguration = new Mock<IConfiguration>();
             if (smtp != null)
             {
-                mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:smtp:host")]).Returns("foo2.com");
-                mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:smtp:port")]).Returns("321");
-                mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:smtp:secure")]).Returns("false");
-                mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:smtp:username")]).Returns("xxx2");
-                mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:smtp:password")]).Returns("yyy2");
-                mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:smtp:from:name")]).Returns("Foo Bar");
-                mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:smtp:from:address")]).Returns("foo@bar.com");
+                mockConfiguration.SetupGet(x => x[It.Is<string>(y => y == "magic:smtp:host")]).Returns("foo2.com");
+                mockConfiguration.SetupGet(x => x[It.Is<string>(y => y == "magic:smtp:port")]).Returns("321");
+                mockConfiguration.SetupGet(x => x[It.Is<string>(y => y == "magic:smtp:secure")]).Returns("false");
+                mockConfiguration.SetupGet(x => x[It.Is<string>(y => y == "magic:smtp:username")]).Returns("xxx2");
+                mockConfiguration.SetupGet(x => x[It.Is<string>(y => y == "magic:smtp:password")]).Returns("yyy2");
+                mockConfiguration.SetupGet(x => x[It.Is<string>(y => y == "magic:smtp:from:name")]).Returns("Foo Bar");
+                mockConfiguration.SetupGet(x => x[It.Is<string>(y => y == "magic:smtp:from:address")]).Returns("foo@bar.com");
                 services.AddTransient<ISmtpClient>((svc) => smtp);
             }
             if (pop3 != null)
             {
-                mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:pop3:host")]).Returns("foo2.com");
-                mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:pop3:port")]).Returns("321");
-                mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:pop3:secure")]).Returns("false");
-                mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:pop3:username")]).Returns("xxx2");
-                mockConfiguration.SetupGet(x => x[It.Is<string>(x => x == "magic:pop3:password")]).Returns("yyy2");
+                mockConfiguration.SetupGet(x => x[It.Is<string>(y => y == "magic:pop3:host")]).Returns("foo2.com");
+                mockConfiguration.SetupGet(x => x[It.Is<string>(y => y == "magic:pop3:port")]).Returns("321");
+                mockConfiguration.SetupGet(x => x[It.Is<string>(y => y == "magic:pop3:secure")]).Returns("false");
+                mockConfiguration.SetupGet(x => x[It.Is<string>(y => y == "magic:pop3:username")]).Returns("xxx2");
+                mockConfiguration.SetupGet(x => x[It.Is<string>(y => y == "magic:pop3:password")]).Returns("yyy2");
                 services.AddTransient<IPop3Client>((svc) => pop3);
             }
             services.AddTransient((svc) => mockConfiguration.Object);

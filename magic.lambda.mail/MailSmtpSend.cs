@@ -29,6 +29,11 @@ namespace magic.lambda.mail
         readonly IConfiguration _configuration;
         readonly contracts.ISmtpClient _client;
 
+        /// <summary>
+        /// Constructor for your SMTP slot class.
+        /// </summary>
+        /// <param name="configuration">IConfiguration dependency provided argument.</param>
+        /// <param name="client">SMTP client implementation</param>
         public MailSmtpSend(IConfiguration configuration, contracts.ISmtpClient client)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
