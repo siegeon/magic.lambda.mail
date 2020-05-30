@@ -58,6 +58,11 @@ namespace magic.lambda.mail
                 {
                     var message = _client.GetMessage(idx);
                     HandleMessage(message, signaler, settings.Lambda, settings.Raw);
+                    signaler.Signal("eval", settings.Lambda);
+
+                    // Cleaning up [.lambda] object by removing [.message].
+                    settings.Lambda.Children
+                        .FirstOrDefault(x => x.Name == ".message")?.UnTie();
                 }
             }
             finally
@@ -85,6 +90,11 @@ namespace magic.lambda.mail
                 {
                     var message = await _client.GetMessageAsync(idx);
                     HandleMessage(message, signaler, settings.Lambda, settings.Raw);
+                    await signaler.SignalAsync("wait.eval", settings.Lambda);
+
+                    // Cleaning up [.lambda] object by removing [.message].
+                    settings.Lambda.Children
+                        .FirstOrDefault(x => x.Name == ".message")?.UnTie();
                 }
             }
             finally
@@ -133,9 +143,8 @@ namespace magic.lambda.mail
             Node lambda,
             bool raw)
         {
-            var exe = lambda.Clone();
             var messageNode = new Node(".message");
-            exe.Insert(0, messageNode);
+            lambda.Insert(0, messageNode);
 
             if (raw)
             {
@@ -153,7 +162,6 @@ namespace magic.lambda.mail
                 signaler.Signal(".mime.parse", parseNode);
                 messageNode.AddRange(parseNode.Children);
             }
-            signaler.Signal("eval", exe);
         }
 
         /*
