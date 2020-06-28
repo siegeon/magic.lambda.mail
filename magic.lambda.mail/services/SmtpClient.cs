@@ -11,55 +11,60 @@ using contract = magic.lambda.mime.contracts;
 
 namespace magic.lambda.mime.services
 {
-    /// <summary>
-    /// Default service implementation class for ISmtpClient.
-    /// 
-    /// Notice, class is simply an adapter towards MailKit's SmtpClient.
-    /// </summary>
+    /// <inheritdoc/>
     public sealed class SmtpClient : contract.ISmtpClient
     {
         readonly Lazy<mk.SmtpClient> _client = new Lazy<mk.SmtpClient>(() => new mk.SmtpClient());
 
+        /// <inheritdoc/>
         public void Authenticate(string username, string password)
         {
             _client.Value.Authenticate(username, password);
         }
 
+        /// <inheritdoc/>
         public async Task AuthenticateAsync(string username, string password)
         {
             await _client.Value.AuthenticateAsync(username, password);
         }
 
+        /// <inheritdoc/>
         public void Connect(string host, int port, bool useSsl)
         {
             _client.Value.Connect(host, port, useSsl);
         }
 
+        /// <inheritdoc/>
         public async Task ConnectAsync(string host, int port, bool useSsl)
         {
             await _client.Value.ConnectAsync(host, port, useSsl);
         }
 
+        /// <inheritdoc/>
         public void Disconnect(bool quit)
         {
             _client.Value.Disconnect(quit);
         }
 
+        /// <inheritdoc/>
         public async Task DisconnectAsync(bool quit)
         {
             await _client.Value.DisconnectAsync(quit);
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             _client.Value?.Dispose();
         }
 
+        /// <inheritdoc/>
         public void Send(MimeMessage message)
         {
             _client.Value.Send(message);
         }
 
+        /// <inheritdoc/>
         public async Task SendAsync(MimeMessage message)
         {
             await _client.Value.SendAsync(message);
