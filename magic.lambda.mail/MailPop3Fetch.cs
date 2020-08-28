@@ -26,7 +26,7 @@ namespace magic.lambda.mail
     {
         readonly IConfiguration _configuration;
         readonly contracts.IPop3Client _client;
-        readonly Func<int, int, int, bool> Done = (idx, count, max) => idx < count && (max == -1 || count < max);
+        readonly Func<int, int, int, bool> Done = (idx, count, max) => idx < count && (max == -1 || idx < max);
 
         /// <summary>
         /// Constructor for your class.
@@ -56,13 +56,10 @@ namespace magic.lambda.mail
                 var count = _client.GetMessageCount();
                 for (var idx = 0; Done(idx, count, settings.Max); idx++)
                 {
+                    var lambda = settings.Lambda.Clone();
                     var message = _client.GetMessage(idx);
-                    HandleMessage(message, signaler, settings.Lambda, settings.Raw);
-                    signaler.Signal("eval", settings.Lambda);
-
-                    // Cleaning up [.lambda] object by removing [.message].
-                    settings.Lambda.Children
-                        .FirstOrDefault(x => x.Name == ".message")?.UnTie();
+                    HandleMessage(message, signaler, lambda, settings.Raw);
+                    signaler.Signal("eval", lambda);
                 }
             }
             finally
@@ -88,13 +85,10 @@ namespace magic.lambda.mail
                 var count = await _client.GetMessageCountAsync();
                 for (var idx = 0; Done(idx, count, settings.Max); idx++)
                 {
+                    var lambda = settings.Lambda.Clone();
                     var message = await _client.GetMessageAsync(idx);
-                    HandleMessage(message, signaler, settings.Lambda, settings.Raw);
-                    await signaler.SignalAsync("wait.eval", settings.Lambda);
-
-                    // Cleaning up [.lambda] object by removing [.message].
-                    settings.Lambda.Children
-                        .FirstOrDefault(x => x.Name == ".message")?.UnTie();
+                    HandleMessage(message, signaler, lambda, settings.Raw);
+                    await signaler.SignalAsync("wait.eval", lambda);
                 }
             }
             finally
