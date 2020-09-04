@@ -35,8 +35,8 @@ namespace magic.lambda.mail
         /// <param name="client">POP3 client implementation</param>
         public MailPop3Fetch(IConfiguration configuration, contracts.IPop3Client client)
         {
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            _client = client ?? throw new ArgumentNullException(nameof(client));
+            _configuration = configuration;
+            _client = client;
         }
 
         /// <summary>

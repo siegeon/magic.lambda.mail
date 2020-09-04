@@ -36,8 +36,8 @@ namespace magic.lambda.mail
         /// <param name="client">SMTP client implementation</param>
         public MailSmtpSend(IConfiguration configuration, contracts.ISmtpClient client)
         {
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            _client = client ?? throw new ArgumentNullException(nameof(client));
+            _configuration = configuration;
+            _client = client;
         }
 
         /// <summary>
