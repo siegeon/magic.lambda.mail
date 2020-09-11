@@ -72,7 +72,7 @@ namespace magic.lambda.mail
                     }
                     finally
                     {
-                        MimeCreator.Dispose(message.Body);
+                        MimeCreator.DisposeEntity(message.Body);
                     }
                 }
             }
@@ -116,7 +116,7 @@ namespace magic.lambda.mail
                     }
                     finally
                     {
-                        MimeCreator.Dispose(message.Body);
+                        MimeCreator.DisposeEntity(message.Body);
                     }
                 }
             }
