@@ -43,5 +43,12 @@ namespace magic.lambda.mime.services
         {
             return await _client.Value.GetMessageCountAsync();
         }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            if (_client.IsValueCreated)
+                Client.Dispose();
+        }
     }
 }

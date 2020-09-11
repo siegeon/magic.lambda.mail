@@ -48,12 +48,6 @@ namespace magic.lambda.mime.services
             await Client.DisconnectAsync(quit);
         }
 
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            Client?.Dispose();
-        }
-
         /// <summary>
         /// Returns the underlaying mail client to caller.
         /// </summary>

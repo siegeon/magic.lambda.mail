@@ -11,7 +11,7 @@ namespace magic.lambda.mime.contracts
     /// <summary>
     /// Abstract POP3 interface dependency injected into POP3 fetcher class.
     /// </summary>
-    public interface IMailClient : IDisposable
+    public interface IMailClient
     {
         /// <summary>
         /// Connects to an SMTP server
