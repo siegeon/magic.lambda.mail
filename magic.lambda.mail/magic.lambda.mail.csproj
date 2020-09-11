@@ -7,10 +7,10 @@
     <Authors>Thomas Hansen</Authors>
     <Company>Thomas Hansen</Company>
     <Copyright>Thomas Hansen, thomas@gaiasoul.com</Copyright>
-    <Description>SMTP and POP3 helpers for Magic.</Description>
+    <Description>SMTP and POP3 helpers for Magic, which combined with magic.lambda.mime allows you to easily send emails from Hyperlambda.</Description>
     <PackageProjectUrl>https://github.com/polterguy/magic.lambda.mail</PackageProjectUrl>
     <PackOnBuild>true</PackOnBuild>
-    <PackageVersion>8.1.10</PackageVersion>
+    <PackageVersion>8.1.11</PackageVersion>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/polterguy/magic.lambda.mail.git</RepositoryUrl>
