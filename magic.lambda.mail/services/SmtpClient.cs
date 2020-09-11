@@ -13,7 +13,7 @@ using magic.lambda.mime.contracts;
 namespace magic.lambda.mime.services
 {
     /// <inheritdoc/>
-    public sealed class SmtpClient : MailClient, ISmtpClient
+    public sealed class SmtpClient : MailClient, ISmtpClient, IDisposable
     {
         readonly Lazy<mk.SmtpClient> _client = new Lazy<mk.SmtpClient>(() => new mk.SmtpClient());
 
