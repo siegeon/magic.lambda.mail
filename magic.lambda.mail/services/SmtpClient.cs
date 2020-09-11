@@ -6,57 +6,19 @@
 using System;
 using System.Threading.Tasks;
 using MimeKit;
+using MailKit;
 using mk = MailKit.Net.Smtp;
-using contract = magic.lambda.mime.contracts;
+using magic.lambda.mime.contracts;
 
 namespace magic.lambda.mime.services
 {
     /// <inheritdoc/>
-    public sealed class SmtpClient : contract.ISmtpClient
+    public sealed class SmtpClient : MailClient, ISmtpClient
     {
         readonly Lazy<mk.SmtpClient> _client = new Lazy<mk.SmtpClient>(() => new mk.SmtpClient());
 
-        /// <inheritdoc/>
-        public void Authenticate(string username, string password)
-        {
-            _client.Value.Authenticate(username, password);
-        }
-
-        /// <inheritdoc/>
-        public async Task AuthenticateAsync(string username, string password)
-        {
-            await _client.Value.AuthenticateAsync(username, password);
-        }
-
-        /// <inheritdoc/>
-        public void Connect(string host, int port, bool useSsl)
-        {
-            _client.Value.Connect(host, port, useSsl);
-        }
-
-        /// <inheritdoc/>
-        public async Task ConnectAsync(string host, int port, bool useSsl)
-        {
-            await _client.Value.ConnectAsync(host, port, useSsl);
-        }
-
-        /// <inheritdoc/>
-        public void Disconnect(bool quit)
-        {
-            _client.Value.Disconnect(quit);
-        }
-
-        /// <inheritdoc/>
-        public async Task DisconnectAsync(bool quit)
-        {
-            await _client.Value.DisconnectAsync(quit);
-        }
-
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            _client.Value?.Dispose();
-        }
+        /// <inheritdic/>
+        public override IMailService Client => _client.Value;
 
         /// <inheritdoc/>
         public void Send(MimeMessage message)
