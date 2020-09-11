@@ -5,7 +5,6 @@
 
 using System;
 using System.Threading.Tasks;
-using MimeKit;
 
 namespace magic.lambda.mime.contracts
 {

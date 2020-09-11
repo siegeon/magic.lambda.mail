@@ -4,7 +4,6 @@
  */
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -182,7 +181,7 @@ namespace magic.lambda.mail
                         yield break;
                     }
                 }
-                throw new ArgumentNullException("Missing mandatory address field");
+                throw new ArgumentException("Missing mandatory address field");
             }
             if (iterator == null)
                 yield break;

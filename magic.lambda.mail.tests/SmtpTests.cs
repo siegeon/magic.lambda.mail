@@ -451,7 +451,7 @@ wait.mail.smtp.send
         [Fact]
         public async Task SendWithoutTo_Throws()
         {
-            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            await Assert.ThrowsAsync<ArgumentException>(async () =>
             {
                 await Common.EvaluateAsync(@"
 wait.mail.smtp.send

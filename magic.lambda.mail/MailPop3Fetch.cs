@@ -115,7 +115,7 @@ namespace magic.lambda.mail
                 Max = input.Children.SingleOrDefault(x => x.Name == "max")?.GetEx<int>() ?? 50;
                 Raw = input.Children.SingleOrDefault(x => x.Name == "raw")?.GetEx<bool>() ?? false;
                 Lambda = input.Children.FirstOrDefault(x => x.Name == ".lambda") ??
-                    throw new ArgumentNullException("No [.lambda] provided to [wait.mail.pop3.fetch]");
+                    throw new ArgumentException("No [.lambda] provided to [wait.mail.pop3.fetch]");
             }
 
             public ConnectionSettings Connection { get; private set; }
