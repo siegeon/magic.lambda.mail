@@ -145,10 +145,30 @@ namespace magic.lambda.mail
             };
 
             // Decorating MimeMessage with from, to, cc, and bcc.
-            message.To.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "to"), true));
-            message.From.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "from"), true, "magic:smtp:"));
-            message.Cc.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "cc")));
-            message.Bcc.AddRange(GetAddresses(node.Children.FirstOrDefault(x => x.Name == "bcc")));
+            message.To.AddRange(
+                GetAddresses(
+                    node.Children.FirstOrDefault(x => x.Name == "to")));
+
+            // Sanity checking.
+            if (!message.To.Any())
+                throw new ArgumentException("No [to] recipient found in [message]");
+
+            message.From.AddRange(
+                GetAddresses(
+                    node.Children.FirstOrDefault(x => x.Name == "from"),
+                    "magic:smtp:from"));
+
+            // Sanity checking.
+            if (!message.From.Any())
+                throw new ArgumentException("No [from] argument found in [message], and no default configuration settings were found either.");
+
+            message.Cc.AddRange(
+                GetAddresses(
+                    node.Children.FirstOrDefault(x => x.Name == "cc")));
+
+            message.Bcc.AddRange(
+                GetAddresses(
+                    node.Children.FirstOrDefault(x => x.Name == "bcc")));
 
             // Creating actual MimeEntity to send.
             var clone = node.Clone();
@@ -164,24 +184,17 @@ namespace magic.lambda.mail
          * Returns a bunch of email addresses by iterating the children of the specified node,
          * and transforming each into a valid MailboxAddress.
          */
-        IEnumerable<MailboxAddress> GetAddresses(
-            Node iterator,
-            bool throwOnEmpty = false,
-            string configPrefix = null)
+        IEnumerable<MailboxAddress> GetAddresses(Node iterator, string configDefaults = null)
         {
-            if (throwOnEmpty && (iterator == null || !iterator.Children.Any()))
+            if ((iterator == null || !iterator.Children.Any()) && !string.IsNullOrEmpty(configDefaults))
             {
-                if (!string.IsNullOrEmpty(configPrefix))
+                var fromName = _configuration[configDefaults + ":name"];
+                var fromAddress = _configuration[configDefaults + ":address"];
+                if (!string.IsNullOrEmpty(fromName) && !string.IsNullOrEmpty(fromAddress))
                 {
-                    var fromName = _configuration[configPrefix + "from:name"];
-                    var fromAddress = _configuration[configPrefix + "from:address"];
-                    if (!string.IsNullOrEmpty(fromName) && !string.IsNullOrEmpty(fromAddress))
-                    {
-                        yield return new MailboxAddress(fromName, fromAddress);
-                        yield break;
-                    }
+                    yield return new MailboxAddress(fromName, fromAddress);
+                    yield break;
                 }
-                throw new ArgumentException("Missing mandatory address field");
             }
             if (iterator == null)
                 yield break;
