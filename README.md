@@ -1,9 +1,9 @@
 
 # Magic Lambda Mail
 
- SMTP and POP3 helpers for Magic.
+[![Build status](https://travis-ci.com/polterguy/magic.lambda.mail.svg?master)](https://travis-ci.com/polterguy/magic.lambda.mail)
 
- Contains POP3 and SMTP slots helpers for Magi.
+ SMTP and POP3 helpers for Magic. Contains the following POP3 and SMTP slots helpers for Magi.
 
 1. **[mail.pop3.fetch]** - Fetches emails form some specific POP3 server
 2. **[mail.smtp.send]** - Sends email over SMTP server
