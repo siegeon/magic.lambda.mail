@@ -50,7 +50,7 @@ invocation.
 * magic.smtp.from.address
 
 An example of how your configuration might look like, if you choose to use configuration settings,
-instead of having to supply server configuration every time you invoke the slot.
+instead of having to supply server configuration every time you invoke the slot, can be found below.
 
 ```json
 {
@@ -106,7 +106,7 @@ mail.smtp.send
            filename:foo.txt
 ```
 
-To construct your email's **[message]** part, [see Magic Mime for details](https://github.com/polterguy/magic.lambda.mime).
+To construct your email's **[message]** part, see the documentation for the Magic Lambda Mime project.
 
 ## Retrieving emails
 
