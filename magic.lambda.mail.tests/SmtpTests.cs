@@ -21,7 +21,7 @@ namespace magic.lambda.mail.tests
         {
             var connectInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
-wait.mail.smtp.send
+mail.smtp.send
    server
       host:foo.com
       port:123
@@ -53,7 +53,7 @@ wait.mail.smtp.send
         {
             var connectInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
-wait.mail.smtp.send
+mail.smtp.send
    server
       port:123
       secure:true
@@ -85,7 +85,7 @@ wait.mail.smtp.send
             var connectInvoked = false;
             var authenticateInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
-wait.mail.smtp.send
+mail.smtp.send
    server
       username:xxx
       password:yyy
@@ -121,7 +121,7 @@ wait.mail.smtp.send
         {
             var authenticateInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
-wait.mail.smtp.send
+mail.smtp.send
    server
    message
       to
@@ -149,7 +149,7 @@ wait.mail.smtp.send
             var authenticateInvoked = false;
             var connectInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
-wait.mail.smtp.send
+mail.smtp.send
    message
       to
          John Doe:john@doe.com
@@ -287,7 +287,7 @@ Body content 2", msg.Body.ToString());
             var connectInvoked = false;
             var sendInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
-wait.mail.smtp.send
+mail.smtp.send
    message
       to
          John Doe:john@doe.com
@@ -324,7 +324,7 @@ wait.mail.smtp.send
         {
             var sendInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
-wait.mail.smtp.send
+mail.smtp.send
    message
       to
          John Doe:john@doe.com
@@ -364,7 +364,7 @@ Body content", msg.Body.ToString());
         {
             var sendInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
-wait.mail.smtp.send
+mail.smtp.send
    message
       to
          John Doe:john@doe.com
@@ -405,7 +405,7 @@ This is content", msg.Body.ToString());
         {
             var sendInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
-wait.mail.smtp.send
+mail.smtp.send
    message
       to
          John Doe:john@doe.com
@@ -454,7 +454,7 @@ wait.mail.smtp.send
             await Assert.ThrowsAsync<ArgumentException>(async () =>
             {
                 await Common.EvaluateAsync(@"
-wait.mail.smtp.send
+mail.smtp.send
    message
       from
          Jane Doe:jane@doe.com

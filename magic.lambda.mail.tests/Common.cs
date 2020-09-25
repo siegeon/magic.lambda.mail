@@ -41,7 +41,7 @@ namespace magic.lambda.mail.tests
             var services = Initialize(smtp, pop3);
             var lambda = new Parser(hl).Lambda();
             var signaler = services.GetService(typeof(ISignaler)) as ISignaler;
-            await signaler.SignalAsync("wait.eval", lambda);
+            await signaler.SignalAsync("eval", lambda);
             return lambda;
         }
 

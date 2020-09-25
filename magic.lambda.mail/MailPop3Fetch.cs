@@ -21,7 +21,6 @@ namespace magic.lambda.mail
     /// Fetches all new messages from the specified POP3 account.
     /// </summary>
     [Slot(Name = "mail.pop3.fetch")]
-    [Slot(Name = "wait.mail.pop3.fetch")]
     public class MailPop3Fetch : ISlotAsync, ISlot
     {
         readonly IConfiguration _configuration;
@@ -88,7 +87,7 @@ namespace magic.lambda.mail
                     var lambda = settings.Lambda.Clone();
                     var message = await _client.GetMessageAsync(idx);
                     HandleMessage(message, signaler, lambda, settings.Raw);
-                    await signaler.SignalAsync("wait.eval", lambda);
+                    await signaler.SignalAsync("eval", lambda);
                 }
             }
             finally
@@ -115,7 +114,7 @@ namespace magic.lambda.mail
                 Max = input.Children.SingleOrDefault(x => x.Name == "max")?.GetEx<int>() ?? 50;
                 Raw = input.Children.SingleOrDefault(x => x.Name == "raw")?.GetEx<bool>() ?? false;
                 Lambda = input.Children.FirstOrDefault(x => x.Name == ".lambda") ??
-                    throw new ArgumentException("No [.lambda] provided to [wait.mail.pop3.fetch]");
+                    throw new ArgumentException("No [.lambda] provided to [mail.pop3.fetch]");
             }
 
             public ConnectionSettings Connection { get; private set; }

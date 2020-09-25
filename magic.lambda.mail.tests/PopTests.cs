@@ -20,7 +20,7 @@ namespace magic.lambda.mail.tests
         {
             var connectInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
-wait.mail.pop3.fetch
+mail.pop3.fetch
    server
       host:foo.com
       port:123
@@ -50,7 +50,7 @@ wait.mail.pop3.fetch
         {
             var connectInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
-wait.mail.pop3.fetch
+mail.pop3.fetch
    server
       port:123
       secure:true
@@ -80,7 +80,7 @@ wait.mail.pop3.fetch
             var connectInvoked = false;
             var authenticateInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
-wait.mail.pop3.fetch
+mail.pop3.fetch
    server
       username:xxx
       password:yyy
@@ -114,7 +114,7 @@ wait.mail.pop3.fetch
         {
             var authenticateInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
-wait.mail.pop3.fetch
+mail.pop3.fetch
    server
    .lambda",
                 null,
@@ -140,7 +140,7 @@ wait.mail.pop3.fetch
             var authenticateInvoked = false;
             var connectInvoked = false;
             var lambda = await Common.EvaluateAsync(@"
-wait.mail.pop3.fetch
+mail.pop3.fetch
    .lambda",
                 null,
                 new helpers.MockPop3Client(
@@ -200,7 +200,7 @@ wait.mail.pop3.fetch
             var connectInvoked = false;
             var retrieveInvoked = 0;
             var lambda = await Common.EvaluateAsync(@"
-wait.mail.pop3.fetch
+mail.pop3.fetch
    .lambda
       add:x:+
          get-nodes:x:@.message/*

@@ -22,7 +22,6 @@ namespace magic.lambda.mail
     /// Sends email messages through an SMTP server.
     /// </summary>
     [Slot(Name = "mail.smtp.send")]
-    [Slot(Name = "wait.mail.smtp.send")]
     public class MailSmtpSend : ISlotAsync, ISlot
     {
         readonly IConfiguration _configuration;
