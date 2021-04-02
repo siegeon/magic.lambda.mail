@@ -207,7 +207,8 @@ mail.smtp.send
                         Assert.Equal("jane@doe.com", (msg.From.First() as MailboxAddress).Address);
                         Assert.Empty(msg.Cc);
                         Assert.Empty(msg.Bcc);
-                        Assert.Equal(@"Content-Type: text/plain
+                        Assert.Equal(@"X-MimeKit-Warning: Do NOT use ToString() to serialize entities! Use one of the WriteTo() methods instead!
+Content-Type: text/plain
 
 Body content", msg.Body.ToString());
                         sendInvoked = true;
@@ -257,7 +258,8 @@ mail.smtp.send
                             Assert.Equal("John Doe1", msg.To.First().Name);
                             Assert.Equal("john1@doe.com", (msg.To.First() as MailboxAddress).Address);
                             Assert.Equal("Jane Doe1", msg.From.First().Name);
-                            Assert.Equal(@"Content-Type: text/plain
+                            Assert.Equal(@"X-MimeKit-Warning: Do NOT use ToString() to serialize entities! Use one of the WriteTo() methods instead!
+Content-Type: text/plain
 
 Body content 1", msg.Body.ToString());
                         }
@@ -267,7 +269,8 @@ Body content 1", msg.Body.ToString());
                             Assert.Equal("John Doe2", msg.To.First().Name);
                             Assert.Equal("john2@doe.com", (msg.To.First() as MailboxAddress).Address);
                             Assert.Equal("Jane Doe2", msg.From.First().Name);
-                            Assert.Equal(@"Content-Type: text/plain
+                            Assert.Equal(@"X-MimeKit-Warning: Do NOT use ToString() to serialize entities! Use one of the WriteTo() methods instead!
+Content-Type: text/plain
 
 Body content 2", msg.Body.ToString());
                         }
@@ -349,7 +352,8 @@ mail.smtp.send
                         Assert.Equal("jane@doe.com", (msg.From.First() as MailboxAddress).Address);
                         Assert.Empty(msg.Cc);
                         Assert.Empty(msg.Bcc);
-                        Assert.Equal(@"Content-Type: text/plain
+                        Assert.Equal(@"X-MimeKit-Warning: Do NOT use ToString() to serialize entities! Use one of the WriteTo() methods instead!
+Content-Type: text/plain
 
 Body content", msg.Body.ToString());
                         sendInvoked = true;
@@ -389,7 +393,8 @@ mail.smtp.send
                         Assert.Equal("jane@doe.com", (msg.From.First() as MailboxAddress).Address);
                         Assert.Empty(msg.Cc);
                         Assert.Empty(msg.Bcc);
-                        Assert.Equal(@"Content-Type: text/plain
+                        Assert.Equal(@"X-MimeKit-Warning: Do NOT use ToString() to serialize entities! Use one of the WriteTo() methods instead!
+Content-Type: text/plain
 Content-Disposition: attachment; filename=foo.txt
 
 This is content", msg.Body.ToString());

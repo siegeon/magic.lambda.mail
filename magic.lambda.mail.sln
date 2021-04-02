@@ -7,6 +7,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "magic.lambda.mail", "magic.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "magic.lambda.mail.tests", "magic.lambda.mail.tests\magic.lambda.mail.tests.csproj", "{4866B090-50BB-43CC-843A-CE50D5AD22A6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "misc", "misc", "{C1E86017-363C-4150-B5D7-8962E274AACF}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		.github\workflows\build.yaml = .github\workflows\build.yaml
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
