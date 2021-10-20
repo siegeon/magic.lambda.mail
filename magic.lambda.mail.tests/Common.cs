@@ -82,8 +82,7 @@ namespace magic.lambda.mail.tests
 
             var types = new SignalsProvider(InstantiateAllTypes<ISlot>(services));
             services.AddTransient<ISignalsProvider>((svc) => types);
-            var provider = services.BuildServiceProvider();
-            return provider;
+            return services.BuildServiceProvider();
         }
 
         static IEnumerable<Type> InstantiateAllTypes<T>(ServiceCollection services) where T : class
