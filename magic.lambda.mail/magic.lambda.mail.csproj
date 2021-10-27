@@ -10,7 +10,7 @@
     <Description>SMTP and POP3 helpers for Magic, which combined with magic.lambda.mime allows you to easily send emails from Hyperlambda. To use package go to https://polterguy.github.io</Description>
     <PackageProjectUrl>https://github.com/polterguy/magic.lambda.mail</PackageProjectUrl>
     <PackOnBuild>true</PackOnBuild>
-    <PackageVersion>9.8.6</PackageVersion>
+    <PackageVersion>9.8.7</PackageVersion>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/polterguy/magic.lambda.mail.git</RepositoryUrl>
@@ -38,9 +38,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="magic.lambda.mime" Version="9.8.6" />
-    <PackageReference Include="magic.node.extensions" Version="9.8.6" />
-    <PackageReference Include="magic.signals.contracts" Version="9.8.6" />
+    <PackageReference Include="magic.lambda.mime" Version="9.8.7" />
+    <PackageReference Include="magic.node.extensions" Version="9.8.7" />
+    <PackageReference Include="magic.signals.contracts" Version="9.8.7" />
     <PackageReference Include="MailKit" Version="2.11.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
     <PackageReference Include="MimeKit" Version="2.11.0" />
