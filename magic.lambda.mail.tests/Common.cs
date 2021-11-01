@@ -27,7 +27,7 @@ namespace magic.lambda.mail.tests
             MockPop3Client pop3 = null)
         {
             var services = Initialize(smtp, pop3);
-            var lambda = new Parser(hl).Lambda();
+            var lambda = HyperlambdaParser.Parse(hl);
             var signaler = services.GetService(typeof(ISignaler)) as ISignaler;
             signaler.Signal("eval", lambda);
             return lambda;
@@ -39,7 +39,7 @@ namespace magic.lambda.mail.tests
             MockPop3Client pop3 = null)
         {
             var services = Initialize(smtp, pop3);
-            var lambda = new Parser(hl).Lambda();
+            var lambda = HyperlambdaParser.Parse(hl);
             var signaler = services.GetService(typeof(ISignaler)) as ISignaler;
             await signaler.SignalAsync("eval", lambda);
             return lambda;
