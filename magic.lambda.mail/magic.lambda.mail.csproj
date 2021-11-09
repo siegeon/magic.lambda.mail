@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.0" PrivateAssets="All" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -41,9 +41,9 @@
     <PackageReference Include="magic.lambda.mime" Version="9.9.2" />
     <PackageReference Include="magic.node.extensions" Version="9.9.2" />
     <PackageReference Include="magic.signals.contracts" Version="9.9.2" />
-    <PackageReference Include="MailKit" Version="2.11.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
-    <PackageReference Include="MimeKit" Version="2.11.0" />
+    <PackageReference Include="MailKit" Version="2.15.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
+    <PackageReference Include="MimeKit" Version="2.15.1" />
   </ItemGroup>
 
 </Project>
