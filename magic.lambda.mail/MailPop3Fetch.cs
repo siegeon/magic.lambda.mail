@@ -152,7 +152,9 @@ namespace magic.lambda.mail
 
                 var parseNode = new Node("", message.Body);
                 signaler.Signal(".mime.parse", parseNode);
-                messageNode.AddRange(parseNode.Children);
+                var entity = new Node("entity", parseNode.Value);
+                entity.AddRange(parseNode.Children);
+                messageNode.Add(entity);
             }
         }
 

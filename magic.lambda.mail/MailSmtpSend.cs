@@ -169,7 +169,7 @@ namespace magic.lambda.mail
                     node.Children.FirstOrDefault(x => x.Name == "bcc")));
 
             // Creating actual MimeEntity to send.
-            var clone = node.Clone();
+            var clone = node.Children.First(x => x.Name == "entity").Clone();
             signaler.Signal(".mime.create", clone);
             var entity = clone.Value as MimeEntity;
             message.Body = entity;
