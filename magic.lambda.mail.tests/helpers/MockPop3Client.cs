@@ -80,9 +80,5 @@ namespace magic.lambda.mail.tests.helpers
         {
             await Task.Yield();
         }
-
-        public void Dispose()
-        {
-        }
     }
 }

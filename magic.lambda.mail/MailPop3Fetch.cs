@@ -115,7 +115,7 @@ namespace magic.lambda.mail
          * Helper class to encapsulate POP3 settings, such as connection settings, and other
          * types of configurations, such as how many messages to retrieve, etc.
          */
-        private class Pop3Settings
+        private sealed class Pop3Settings
         {
             public Pop3Settings(Node input, IConfiguration configuration)
             {

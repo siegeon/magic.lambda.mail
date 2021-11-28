@@ -56,10 +56,6 @@ namespace magic.lambda.mail.tests.helpers
             await Task.Yield();
         }
 
-        public void Dispose()
-        {
-        }
-
         public void Send(MimeMessage message)
         {
             _send(message);
