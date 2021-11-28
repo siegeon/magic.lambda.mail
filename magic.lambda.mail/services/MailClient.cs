@@ -3,8 +3,8 @@
  */
 
 using System.Threading.Tasks;
-using magic.lambda.mime.contracts;
 using MailKit;
+using magic.lambda.mime.contracts;
 
 namespace magic.lambda.mime.services
 {

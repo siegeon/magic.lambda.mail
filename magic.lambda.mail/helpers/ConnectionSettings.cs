@@ -16,7 +16,10 @@ namespace magic.lambda.mail.helpers
      */
     internal class ConnectionSettings
     {
-        public ConnectionSettings(IConfiguration configuration, Node input, string serverType)
+        public ConnectionSettings(
+            IConfiguration configuration,
+            Node input,
+            string serverType)
         {
             // Retrieving connection arguments.
             Server = input?.Children.SingleOrDefault(x => x.Name == "host")?.GetEx<string>() ??

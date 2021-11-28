@@ -3,7 +3,7 @@
 
  SMTP and POP3 helpers for Magic. More specifically, this project contains the following slots.
 
-* __[mail.smtp.send]__ - Sends email(s) over an SMTP server
+* __[mail.smtp.send]__ - Sends email(s) through an SMTP server
 * __[mail.pop3.fetch]__ - Retrieves emails from a POP3 server
 
 Both of the above slots have async overrides that will be automatically used by Magic if possible.
@@ -136,12 +136,33 @@ POP3 connection, if not explicitly given as part of invocation.
 * magic.pop3.username
 * magic.pop3.password
 
+
+An example of how your configuration might look like, if you choose to use configuration settings,
+instead of having to supply server configuration every time you invoke the slot, can be found below.
+
+```json
+{
+  "magic":{
+    "pop3":{
+      "host":"pop.gmail.com",
+      "port":995,
+      "secure":true,
+      "username":"username@gmail.com",
+      "password":"gmail-password",
+    }
+  }
+}
+```
+
+**FYI** - If you exchange the above username/password combination, and open up your GMail account for _"insecure apps"_,
+the above will actually allow you to send emails using your GMail account.
+
 Notice, if **[raw]** is true, the message will _not_ be parsed and turned into a structural lambda object,
 but passed into your **[.lambda]** as its raw MIME message instead. The default value for **[raw]** is false.
 
-Your **[.lambda]** callback will be invoked with a single **[.message]** node, containing the
-structured version of the MIME message wrapping the actual email message. Refer to
-see the Magic Lambda MIME documentation for details to understand this
+Your **[.lambda]** callback will be invoked for each message with a **[.message]** node, containing the
+structured/raw version of the MIME message wrapping the actual email message. Refer to
+the Magic Lambda MIME project documentation for details to understand this
 structure. If you choose to retrieve messages in **[raw]** format, the message node's value will contain
 the raw MIME message as text. If you choose this path, and you later want to actually parse the message,
 to make it become a structured lambda object - You can use the **[mime.parse]** slot from Magic Lambda MIME.

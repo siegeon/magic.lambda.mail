@@ -17,7 +17,7 @@ using contracts = magic.lambda.mime.contracts;
 namespace magic.lambda.mail
 {
     /// <summary>
-    /// Fetches all new messages from the specified POP3 account.
+    /// Fetches all new messages from the specified POP3 server/account.
     /// </summary>
     [Slot(Name = "mail.pop3.fetch")]
     public class MailPop3Fetch : ISlotAsync, ISlot
@@ -29,7 +29,7 @@ namespace magic.lambda.mail
         /// <summary>
         /// Constructor for your class.
         /// </summary>
-        /// <param name="configuration">IConfiguration dependency provided argument.</param>
+        /// <param name="configuration">IConfiguration dependency injected argument.</param>
         /// <param name="client">POP3 client implementation</param>
         public MailPop3Fetch(IConfiguration configuration, contracts.IPop3Client client)
         {
@@ -45,7 +45,10 @@ namespace magic.lambda.mail
         public void Signal(ISignaler signaler, Node input)
         {
             var settings = new Pop3Settings(input, _configuration);
-            _client.Connect(settings.Connection.Server, settings.Connection.Port, settings.Connection.Secure);
+            _client.Connect(
+                settings.Connection.Server,
+                settings.Connection.Port,
+                settings.Connection.Secure);
             try
             {
                 if (settings.Connection.HasCredentials)
@@ -56,7 +59,11 @@ namespace magic.lambda.mail
                 {
                     var lambda = settings.Lambda.Clone();
                     var message = _client.GetMessage(idx);
-                    HandleMessage(message, signaler, lambda, settings.Raw);
+                    HandleMessage(
+                        message,
+                        signaler,
+                        lambda,
+                        settings.Raw);
                     signaler.Signal("eval", lambda);
                 }
             }
@@ -74,7 +81,10 @@ namespace magic.lambda.mail
         public async Task SignalAsync(ISignaler signaler, Node input)
         {
             var settings = new Pop3Settings(input, _configuration);
-            await _client.ConnectAsync(settings.Connection.Server, settings.Connection.Port, settings.Connection.Secure);
+            await _client.ConnectAsync(
+                settings.Connection.Server,
+                settings.Connection.Port,
+                settings.Connection.Secure);
             try
             {
                 if (settings.Connection.HasCredentials)
@@ -85,7 +95,11 @@ namespace magic.lambda.mail
                 {
                     var lambda = settings.Lambda.Clone();
                     var message = await _client.GetMessageAsync(idx);
-                    HandleMessage(message, signaler, lambda, settings.Raw);
+                    HandleMessage(
+                        message,
+                        signaler,
+                        lambda,
+                        settings.Raw);
                     await signaler.SignalAsync("eval", lambda);
                 }
             }
@@ -101,7 +115,7 @@ namespace magic.lambda.mail
          * Helper class to encapsulate POP3 settings, such as connection settings, and other
          * types of configurations, such as how many messages to retrieve, etc.
          */
-        class Pop3Settings
+        private class Pop3Settings
         {
             public Pop3Settings(Node input, IConfiguration configuration)
             {

@@ -51,7 +51,6 @@
     <PackageReference Include="magic.signals.contracts" Version="9.9.3" />
     <PackageReference Include="MailKit" Version="2.15.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
-    <PackageReference Include="MimeKit" Version="2.15.1" />
   </ItemGroup>
 
 </Project>
