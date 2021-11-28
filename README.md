@@ -68,7 +68,7 @@ instead of having to supply server configuration every time you invoke the slot,
 ```
 
 **FYI** - If you exchange the above username/password combination, and open your GMail account for _"insecure apps"_,
-the above will actually allow you to send emails using your GMail account.
+the above will allow you to send emails using your GMail account.
 
 Assuming you have the above somewhere in your configuration, you can construct and send an email using something
 like the following. Which probably makes things more convenient, allowing you to avoid thinking about connection
@@ -106,8 +106,7 @@ To construct your email's **[message]** part, see the documentation for the Magi
 
 ## Retrieving emails
 
-**Notice** - This slot is in currently beta implementation, and its API might change in a future version
-of Magic.
+To retrieve emails from a POP3 server is equally easy. Below is an example.
 
 ```
 mail.pop3.fetch
@@ -155,7 +154,7 @@ instead of having to supply server configuration every time you invoke the slot,
 ```
 
 **FYI** - If you exchange the above username/password combination, and open up your GMail account for _"insecure apps"_,
-the above will actually allow you to send emails using your GMail account.
+the above will allow you to send emails using your GMail account.
 
 Notice, if **[raw]** is true, the message will _not_ be parsed and turned into a structural lambda object,
 but passed into your **[.lambda]** as its raw MIME message instead. The default value for **[raw]** is false.
@@ -166,6 +165,12 @@ the Magic Lambda MIME project documentation for details to understand this
 structure. If you choose to retrieve messages in **[raw]** format, the message node's value will contain
 the raw MIME message as text. If you choose this path, and you later want to actually parse the message,
 to make it become a structured lambda object - You can use the **[mime.parse]** slot from Magic Lambda MIME.
+
+## Cryptography
+
+**Notice** - The PGP parts was take out of the library starting from version 9.9.8, since it was a piece of cabbage, due to
+dependencies upon GnuPG, the local file system to resolve PGP key pairs, etc. At some point we might re-introduce these parts
+into the library, but if this is a problem for you, make sure you use a version _before_ version 9.9.8 of the library.
 
 ## Project website
 
