@@ -24,11 +24,11 @@ namespace magic.lambda.mail.helpers
             // Retrieving connection arguments.
             Server = input?.Children.SingleOrDefault(x => x.Name == "host")?.GetEx<string>() ??
                 configuration[$"magic:{serverType}:host"] ??
-                throw new ArgumentException("No [host] provided neither in invocation nor in configuration");
+                throw new HyperlambdaException("No [host] provided neither in invocation nor in configuration");
 
             Port = input?.Children.SingleOrDefault(x => x.Name == "port")?.GetEx<int>() ??
                 (configuration[$"magic:{serverType}:port"] != null ? new int?(int.Parse(configuration[$"magic:{serverType}:port"])) : null) ??
-                throw new ArgumentException("No [port] provided neither in invocation nor in configuration");
+                throw new HyperlambdaException("No [port] provided neither in invocation nor in configuration");
 
             Secure = input?.Children.SingleOrDefault(x => x.Name == "secure")?.GetEx<bool>() ??
                 (configuration[$"magic:{serverType}:secure"] != null ? new bool?(bool.Parse(configuration[$"magic:{serverType}:secure"])) : null) ??

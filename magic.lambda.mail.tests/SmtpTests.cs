@@ -2,13 +2,13 @@
  * Magic Cloud, copyright Aista, Ltd. See the attached LICENSE file for details.
  */
 
-using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
 using MimeKit;
 using magic.node;
+using magic.node.extensions;
 using magic.signals.contracts;
 
 namespace magic.lambda.mail.tests
@@ -450,7 +450,7 @@ mail.smtp.send
         [Fact]
         public async Task SendWithoutTo_Throws()
         {
-            await Assert.ThrowsAsync<ArgumentException>(async () =>
+            await Assert.ThrowsAsync<HyperlambdaException>(async () =>
             {
                 await Common.EvaluateAsync(@"
 mail.smtp.send

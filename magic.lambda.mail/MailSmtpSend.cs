@@ -166,7 +166,7 @@ namespace magic.lambda.mail
 
             // Sanity checking.
             if (!message.To.Any())
-                throw new ArgumentException("No [to] recipient found in [message]");
+                throw new HyperlambdaException("No [to] recipient found in [message]");
 
             message.From.AddRange(
                 GetAddresses(
@@ -175,7 +175,7 @@ namespace magic.lambda.mail
 
             // Sanity checking.
             if (!message.From.Any())
-                throw new ArgumentException("No [from] argument found in [message], and no default configuration settings were found either.");
+                throw new HyperlambdaException("No [from] argument found in [message], and no default configuration settings were found either.");
 
             message.Cc.AddRange(
                 GetAddresses(
