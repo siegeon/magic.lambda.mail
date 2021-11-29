@@ -12,7 +12,6 @@ using magic.node;
 using magic.node.extensions;
 using magic.signals.contracts;
 using magic.lambda.mail.helpers;
-using magic.lambda.mime.helpers;
 using contracts = magic.lambda.mime.contracts;
 
 namespace magic.lambda.mail
@@ -70,7 +69,7 @@ namespace magic.lambda.mail
                     }
                     finally
                     {
-                        MimeCreator.DisposeEntity(message.Body);
+                        DisposeEntity(message.Body);
                     }
                 }
             }
@@ -114,7 +113,7 @@ namespace magic.lambda.mail
                     }
                     finally
                     {
-                        MimeCreator.DisposeEntity(message.Body);
+                        DisposeEntity(message.Body);
                     }
                 }
             }
@@ -126,6 +125,24 @@ namespace magic.lambda.mail
         }
 
         #region [ -- Private helpers -- ]
+
+        /*
+         * Private helper method to dispose all streams inside all entities.
+         */
+        static void DisposeEntity(MimeEntity entity)
+        {
+            if (entity is MimePart part)
+            {
+                part.Content?.Stream?.Dispose();
+            }
+            else if (entity is Multipart multi)
+            {
+                foreach (var idx in multi)
+                {
+                    DisposeEntity(idx);
+                }
+            }
+        }
 
         /*
          * Creates a MimeMessage according to given node, and returns to caller.
