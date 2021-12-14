@@ -61,14 +61,10 @@ namespace magic.lambda.mail
                 {
                     // Creating MimeMessage, making sure we dispose any streams created in the process.
                     var message = CreateMessage(signaler, idxMsgNode);
-                    try
+                    using (message.Body)
                     {
                         // Sending message over existing SMTP connection.
                         _client.Send(message);
-                    }
-                    finally
-                    {
-                        DisposeEntity(message.Body);
                     }
                 }
             }
@@ -105,14 +101,10 @@ namespace magic.lambda.mail
                 {
                     // Creating MimeMessage, making sure we dispose any streams created in the process.
                     var message = CreateMessage(signaler, idxMsgNode);
-                    try
+                    using (message.Body)
                     {
                         // Sending message over existing SMTP connection.
-                        await _client.SendAsync(message);
-                    }
-                    finally
-                    {
-                        DisposeEntity(message.Body);
+                        _client.Send(message);
                     }
                 }
             }
@@ -124,24 +116,6 @@ namespace magic.lambda.mail
         }
 
         #region [ -- Private helpers -- ]
-
-        /*
-         * Private helper method to dispose all streams inside all entities.
-         */
-        static void DisposeEntity(MimeEntity entity)
-        {
-            if (entity is MimePart part)
-            {
-                part.Content?.Stream?.Dispose();
-            }
-            else if (entity is Multipart multi)
-            {
-                foreach (var idx in multi)
-                {
-                    DisposeEntity(idx);
-                }
-            }
-        }
 
         /*
          * Creates a MimeMessage according to given node, and returns to caller.

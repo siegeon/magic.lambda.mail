@@ -149,26 +149,29 @@ namespace magic.lambda.mail
             Node lambda,
             bool raw)
         {
-            var messageNode = new Node(".message");
-            lambda.Insert(0, messageNode);
-
-            if (raw)
+            using (var body = message.Body)
             {
-                messageNode.Value = message.ToString();
-            }
-            else
-            {
-                messageNode.Add(new Node("subject", message.Subject));
-                AddRecipient(message.From.Select(x => x as MailboxAddress), messageNode, "from");
-                AddRecipient(message.To.Select(x => x as MailboxAddress), messageNode, "to");
-                AddRecipient(message.Cc.Select(x => x as MailboxAddress), messageNode, "cc");
-                AddRecipient(message.Bcc.Select(x => x as MailboxAddress), messageNode, "bcc");
+                var messageNode = new Node(".message");
+                lambda.Insert(0, messageNode);
 
-                var parseNode = new Node("", message.Body);
-                signaler.Signal(".mime.parse", parseNode);
-                var entity = new Node("entity", parseNode.Value);
-                entity.AddRange(parseNode.Children);
-                messageNode.Add(entity);
+                if (raw)
+                {
+                    messageNode.Value = message.ToString();
+                }
+                else
+                {
+                    messageNode.Add(new Node("subject", message.Subject));
+                    AddRecipient(message.From.Select(x => x as MailboxAddress), messageNode, "from");
+                    AddRecipient(message.To.Select(x => x as MailboxAddress), messageNode, "to");
+                    AddRecipient(message.Cc.Select(x => x as MailboxAddress), messageNode, "cc");
+                    AddRecipient(message.Bcc.Select(x => x as MailboxAddress), messageNode, "bcc");
+
+                    var parseNode = new Node("", body);
+                    signaler.Signal(".mime.parse", parseNode);
+                    var entity = new Node("entity", parseNode.Value);
+                    entity.AddRange(parseNode.Children);
+                    messageNode.Add(entity);
+                }
             }
         }
 
