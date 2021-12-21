@@ -6,9 +6,9 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
 using MimeKit;
 using magic.node;
+using magic.node.contracts;
 using magic.node.extensions;
 using magic.signals.contracts;
 using magic.lambda.mail.helpers;
@@ -22,16 +22,16 @@ namespace magic.lambda.mail
     [Slot(Name = "mail.pop3.fetch")]
     public class MailPop3Fetch : ISlotAsync, ISlot
     {
-        readonly IConfiguration _configuration;
+        readonly IMagicConfiguration _configuration;
         readonly contracts.IPop3Client _client;
         readonly Func<int, int, int, bool> Done = (idx, count, max) => idx < count && (max == -1 || idx < max);
 
         /// <summary>
         /// Constructor for your class.
         /// </summary>
-        /// <param name="configuration">IConfiguration dependency injected argument.</param>
+        /// <param name="configuration">Configuration dependency injected argument.</param>
         /// <param name="client">POP3 client implementation</param>
-        public MailPop3Fetch(IConfiguration configuration, contracts.IPop3Client client)
+        public MailPop3Fetch(IMagicConfiguration configuration, contracts.IPop3Client client)
         {
             _configuration = configuration;
             _client = client;
@@ -117,7 +117,7 @@ namespace magic.lambda.mail
          */
         private sealed class Pop3Settings
         {
-            public Pop3Settings(Node input, IConfiguration configuration)
+            public Pop3Settings(Node input, IMagicConfiguration configuration)
             {
                 Connection = new ConnectionSettings(
                     configuration,

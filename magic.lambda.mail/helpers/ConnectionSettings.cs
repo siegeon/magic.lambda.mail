@@ -3,8 +3,8 @@
  */
 
 using System.Linq;
-using Microsoft.Extensions.Configuration;
 using magic.node;
+using magic.node.contracts;
 using magic.node.extensions;
 
 namespace magic.lambda.mail.helpers
@@ -16,7 +16,7 @@ namespace magic.lambda.mail.helpers
     internal class ConnectionSettings
     {
         public ConnectionSettings(
-            IConfiguration configuration,
+            IMagicConfiguration configuration,
             Node input,
             string serverType)
         {

@@ -5,9 +5,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
 using MimeKit;
 using magic.node;
+using magic.node.contracts;
 using magic.node.extensions;
 using magic.signals.contracts;
 using magic.lambda.mail.helpers;
@@ -21,15 +21,15 @@ namespace magic.lambda.mail
     [Slot(Name = "mail.smtp.send")]
     public class MailSmtpSend : ISlotAsync, ISlot
     {
-        readonly IConfiguration _configuration;
+        readonly IMagicConfiguration _configuration;
         readonly contracts.ISmtpClient _client;
 
         /// <summary>
         /// Constructor for your SMTP slot class.
         /// </summary>
-        /// <param name="configuration">IConfiguration dependency provided argument.</param>
+        /// <param name="configuration">Configuration dependency provided argument.</param>
         /// <param name="client">SMTP client implementation</param>
-        public MailSmtpSend(IConfiguration configuration, contracts.ISmtpClient client)
+        public MailSmtpSend(IMagicConfiguration configuration, contracts.ISmtpClient client)
         {
             _configuration = configuration;
             _client = client;
