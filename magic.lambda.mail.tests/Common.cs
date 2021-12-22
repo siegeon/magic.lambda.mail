@@ -100,6 +100,7 @@ namespace magic.lambda.mail.tests
             var types = new SignalsProvider(InstantiateAllTypes<ISlot>(services));
             services.AddTransient<ISignalsProvider>((svc) => types);
             services.AddTransient<IStreamService, StreamService>();
+            services.AddTransient<IFileService, FileService>();
             return services.BuildServiceProvider();
         }
 
